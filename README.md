@@ -14,7 +14,7 @@ Installing all 3 dependencies is required before installing module
 `npm i github:Dayworker-App/dayworker`
 
 #### Context Provider Component
-`import { DayWorkerProvider } from "dayworker"`
+`import { DayworkerProvider } from "dayworker"`
 ```
 <DayworkerProvider>
     {children}
