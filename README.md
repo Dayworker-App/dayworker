@@ -4,12 +4,14 @@
 ## Properties
 `user: undefined`
 `userLoading: true`
-## Methods
-`setUser: async (user) => null`
-
 `firebaseApp: app`
 `auth`
+## Methods
+#### setUser()
+`setUser: async (user) => null`
+#### signOut()
 `signOut`
+#### signIn()
 `signIn`
 `signUp`
 `sendUpdatePasswordEmail`
