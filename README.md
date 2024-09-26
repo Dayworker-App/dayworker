@@ -4,15 +4,15 @@
 `npm i https://github.com/Dayworker-App/dayworker.git`
 
 #### Context Provider Component
-`import { DayWorkerProvider } from "../SDKs/DayWorker/DayWorker"`
+`import { DayWorkerProvider } from "dayworker"`
 `
-<DayWorkerProvider>
+<DayworkerProvider>
     {children}
-</DayWorkerProvider>
+</DayworkerProvider>
 `
 
 #### Use Hook
-`const { updateProfile, constants } = useDayWorker()`
+`const { updateProfile, constants } = useDayworker()`
 
 ## Properties
 `user: undefined`
