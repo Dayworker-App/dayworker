@@ -1,12 +1,22 @@
 # Dayworker SDK
+
 ## Useage
-```const { updateProfile, constants } = useDayWorker()```
+
+#### Context Provider Component
+`<DayWorkerProvider>
+    {children}
+</DayWorkerProvider>`
+
+#### Use provider
+`const { updateProfile, constants } = useDayWorker()`
+
 ## Properties
 `user: undefined`
 `userLoading: true`
 `firebaseApp: app`
 `auth`
 `constants: undefined`
+
 ## Methods
 #### setUser()
 `setUser: async (user) => null`
