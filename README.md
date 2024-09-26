@@ -1,7 +1,17 @@
 # Dayworker SDK
 
+## Peer Dependencies
+Installing all 3 dependencies is required before installing module
+`
+"peerDependencies": {
+    "firebase": "^10.11.0",
+    "geofire-common": "^6.0.0",
+    "react": "^18.0.0"
+}
+`
+
 ## Useage
-`npm i https://github.com/Dayworker-App/dayworker.git`
+`npm i github:Dayworker-App/dayworker`
 
 #### Context Provider Component
 `import { DayWorkerProvider } from "dayworker"`
