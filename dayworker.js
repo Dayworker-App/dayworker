@@ -503,7 +503,7 @@ const verifyInAppPurchase = async (type, recipt, transactionId) => {
     })
 } */
 
-export const DayWorkerContext = React.createContext({
+export const DayworkerContext = React.createContext({
     user: undefined,
     setUser: async (user) => null,
     userLoading: true,
@@ -524,8 +524,8 @@ export const DayWorkerContext = React.createContext({
     geolocateProfiles,
     updateProfileImage,
 });
-export const useDayWorker = () => useContext( DayWorkerContext );
-export const DayWorkerProvider = ({ children }) => {
+export const useDayworker = () => useContext( DayworkerContext );
+export const DayworkerProvider = ({ children }) => {
     const [user, setUser] = useState( undefined );
     const [constants, setConstants] = useState( undefined );
 
@@ -571,5 +571,5 @@ export const DayWorkerProvider = ({ children }) => {
             'badges', 'bizFocus', 'regions', 'skillLevel', 'trades', 'settings'
         ]).then(c=>setConstants(current=>c));
     }, [API]);
-    return <DayWorkerContext.Provider value={API}>{children}</DayWorkerContext.Provider>
+    return <DayworkerContext.Provider value={API}>{children}</DayworkerContext.Provider>
 }
