@@ -1,8 +1,8 @@
 {
   "name": "dayworker",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Dayworker JavaScript SDK for connecting to Firebase.",
-  "main": "dayworker.jsx",
+  "main": "dayworker.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
