@@ -6,6 +6,7 @@
 `userLoading: true`
 ## Methods
 `setUser: async (user) => null`
+
 `firebaseApp: app`
 `auth`
 `signOut`
