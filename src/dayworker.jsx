@@ -5,10 +5,10 @@ import React, {
 
 import { 
     getFirestore, collection, query, where, orderBy, startAt, endAt, and, or,
-    getDocs, setDoc, doc, getDoc, addDoc, onSnapshot, GeoPoint, serverTimestamp
+    getDocs, setDoc, doc, getDoc, GeoPoint, serverTimestamp
 } from "firebase/firestore";
 
-import { 
+import {
     getStorage,
     ref as storageCreateRef,
     uploadString as storageUploadString,
