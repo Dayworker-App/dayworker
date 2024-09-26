@@ -1,13 +1,17 @@
 # Dayworker SDK
 
 ## Useage
+`npm i https://github.com/Dayworker-App/dayworker.git`
 
 #### Context Provider Component
-`<DayWorkerProvider>
+`import { DayWorkerProvider } from "../SDKs/DayWorker/DayWorker"`
+`
+<DayWorkerProvider>
     {children}
-</DayWorkerProvider>`
+</DayWorkerProvider>
+`
 
-#### Use provider
+#### Use Hook
 `const { updateProfile, constants } = useDayWorker()`
 
 ## Properties
