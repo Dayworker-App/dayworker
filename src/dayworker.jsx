@@ -524,7 +524,9 @@ export const DayworkerContext = React.createContext({
     geolocateProfiles,
     updateProfileImage,
 });
+
 export const useDayworker = () => useContext( DayworkerContext );
+
 export const DayworkerProvider = ({ children }) => {
     const [user, setUser] = useState( undefined );
     const [constants, setConstants] = useState( undefined );
@@ -571,5 +573,6 @@ export const DayworkerProvider = ({ children }) => {
             'badges', 'bizFocus', 'regions', 'skillLevel', 'trades', 'settings'
         ]).then(c=>setConstants(current=>c));
     }, [API]);
-    return <DayworkerContext.Provider value={API}>{children}</DayworkerContext.Provider>
+    return {API, children};
+    // return <DayworkerContext.Provider value={API}>{children}</DayworkerContext.Provider>
 }
