@@ -1,0 +1,24 @@
+{
+  "name": "dayworker",
+  "version": "0.0.1",
+  "description": "Dayworker JavaScript SDK for connecting to Firebase.",
+  "main": "dayworker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dayworker-App/dayworker.git"
+  },
+  "keywords": [
+    "dayworker",
+    "firebase",
+    "javascript"
+  ],
+  "author": "Joseph Weitzel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dayworker-App/dayworker/issues"
+  },
+  "homepage": "https://github.com/Dayworker-App/dayworker#readme"
+}
