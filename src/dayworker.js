@@ -585,6 +585,6 @@ export const DayworkerProvider = ({ children }) => {
             'badges', 'bizFocus', 'regions', 'skillLevel', 'trades', 'settings'
         ]).then(c=>setConstants(current=>c));
     }, [API]);
-    return React.createElement('DayworkerContext.Provider', {value: API}, [...children]);
-    // return <DayworkerContext.Provider value={API}>{children}</DayworkerContext.Provider>
+    // return React.createElement(DayworkerContext.Provider, {value: API}, [...children]);
+    return <DayworkerContext.Provider value={API}>{children}</DayworkerContext.Provider>
 }
