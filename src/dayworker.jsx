@@ -1,3 +1,16 @@
+/**
+
+// Context Provider Useage:
+
+import { dayworkerProvider } from 'dayworker';
+const DayworkerProvider = ({children}) => {
+    const value = dayworkerProvider();
+    return <DayworkerContext.Provider value={value}>{children}</DayworkerContext.Provider>
+}
+
+<DayworkerProvider>{children}</DayworkerProvider>
+
+*/
 
 import React, {
     useCallback, useContext, useEffect, useMemo, useState
@@ -527,10 +540,9 @@ export const DayworkerContext = React.createContext({
 
 export const useDayworker = () => useContext( DayworkerContext );
 
-export const DayworkerProvider = ({ children }) => {
+export const dayworkerProvider = () => {
     const [user, setUser] = useState( undefined );
     const [constants, setConstants] = useState( undefined );
-
     const getAuthenticatedUserProfile = useCallback(async () => {
         if ( !user ) return null;
         if ( cache.has('profile') ) {
@@ -573,6 +585,6 @@ export const DayworkerProvider = ({ children }) => {
             'badges', 'bizFocus', 'regions', 'skillLevel', 'trades', 'settings'
         ]).then(c=>setConstants(current=>c));
     }, [API]);
-    return {API, children};
+    return API;
     // return <DayworkerContext.Provider value={API}>{children}</DayworkerContext.Provider>
 }
