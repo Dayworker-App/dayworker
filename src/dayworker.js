@@ -540,7 +540,7 @@ export const DayworkerContext = React.createContext({
 
 export const useDayworker = () => useContext( DayworkerContext );
 
-export const dayworkerProvider = () => {
+export const DayworkerProvider = ({ children }) => {
     const [user, setUser] = useState( undefined );
     const [constants, setConstants] = useState( undefined );
     const getAuthenticatedUserProfile = useCallback(async () => {
@@ -585,6 +585,6 @@ export const dayworkerProvider = () => {
             'badges', 'bizFocus', 'regions', 'skillLevel', 'trades', 'settings'
         ]).then(c=>setConstants(current=>c));
     }, [API]);
-    return API;
+    return React.createElement(DayworkerContext.Provider, {value: API}, children);
     // return <DayworkerContext.Provider value={API}>{children}</DayworkerContext.Provider>
 }
