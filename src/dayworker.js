@@ -2,7 +2,7 @@
 
 // Context Provider Useage:
 
-import { dayworkerProvider } from 'dayworker';
+import { DayworkerContext, dayworkerProvider } from 'dayworker';
 const DayworkerProvider = ({children}) => {
     const value = dayworkerProvider();
     return <DayworkerContext.Provider value={value}>{children}</DayworkerContext.Provider>
