@@ -15,7 +15,7 @@ Installing all 3 dependencies is required before installing module
 
 #### Context Provider Component
 `import { DayworkerProvider } from "dayworker"`
-```
+```jsx
 <DayworkerProvider>
     {children}
 </DayworkerProvider>
@@ -39,7 +39,7 @@ Installing all 3 dependencies is required before installing module
 #### signIn(email, password)
 `signIn(email: string, password: string): Promise<UserCredential>`
 #### signUp(email, password, input, userType, lang)
-```
+```typescript
 interface AccountRequest { zip: string, geoPoint: string, geohash: string, name: string }
 interface AccountAuthenticated extends AccountRequest { uid: string }
 signUp(email: string, password: string, input: AccountRequest, userType: 'worker' | 'contractor', lang: 'en-US' | 'es-MX'): Promise<AccountAuthenticated>
@@ -47,7 +47,7 @@ signUp(email: string, password: string, input: AccountRequest, userType: 'worker
 // Issue: The zip is currently typed as number in the SDK and the database, but I believe there are zipcodes that start with zero... I'll create an issue on this repo if so.
 ```
 #### sendUpdatePasswordEmail(email)
-```
+```typescript
 sendUpdatePasswordEmail(email: string): Promise<void>
 // Note: For mobile: please define the params on this repo:
 /*
@@ -62,19 +62,19 @@ iOS: {
 */
 ```
 #### updateProfile()
-```
+```typescript
 type AccountAuthenticated = { zip: string, geoPoint: string, geohash: string, name: string, uid: string }
 updateProfile(data: AccountAuthenticated): Promise<AccountAuthenticated>
 // Note: If the { zip: number } is in the data, geoPoint and geohash will be defined.
 // Issue: The zip is currently typed as number in the SDK and the database, but I believe there are zipcodes that start with zero... I'll create an issue on this repo if so.
 ```
 #### processAuthError(error)
-```
+```typescript
 type LangKey = string // Ex: error.incorrectEmailFormat
 processAuthError(error: { message: string, code: number }): { origMessage: message, code, message: LangKey }
 ```
 #### checkTranslated(t, key)
-```
+```typescript
 type tFunction (key) => string // This is the babel translation function t()
 type LangKey = string // Ex: error.incorrectEmailFormat
 checkTranslated(t: tFunction, key: LangKey ): boolean
@@ -84,12 +84,12 @@ checkTranslated(t: tFunction, key: LangKey ): boolean
 #### getConstants(docs)
 `getConstants(docs: string): { [key: string]: value: string | number | boolean | null }`
 #### getAuthenticatedUserProfile()
-```
+```typescript
 type AccountAuthenticated = { zip: string, geoPoint: string, geohash: string, name: string, uid: string }
 getAuthenticatedUserProfile(): AccountAuthenticated
 ```
 #### geolocateProfiles(center, radiusInM, queryParams)
-```
+```typescript
 geolocateProfiles(center: [latitude, longitude], radiusInM: number, queryParams: URLSearchParams): User[]
 /**
 queryParams:
