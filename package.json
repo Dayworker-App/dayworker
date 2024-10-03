@@ -2,7 +2,7 @@
   "name": "dayworker",
   "version": "0.0.7",
   "description": "Dayworker JavaScript SDK for connecting to Firebase.",
-  "main": "dev/dayworker.js",
+  "main": "dist/dayworker.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel src --out-dir dist --copy-files"
