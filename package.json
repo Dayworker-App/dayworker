@@ -1,6 +1,6 @@
 {
   "name": "dayworker",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "Dayworker JavaScript SDK for connecting to Firebase.",
   "main": "dist/dayworker.js",
   "scripts": {
@@ -23,7 +23,6 @@
   },
   "homepage": "https://github.com/Dayworker-App/dayworker#readme",
   "peerDependencies": {
-    "firebase": "^10.11.0",
     "geofire-common": "^6.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"

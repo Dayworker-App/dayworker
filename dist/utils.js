@@ -1,19 +1,23 @@
 "use strict";
 
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.SearchParams = void 0;
+exports.SearchParams = SearchParams;
+exports.checkTranslated = void 0;
 exports.clean = clean;
+exports.convertAuthErrorCodeToLangKey = void 0;
 exports.getInitials = getInitials;
+exports.matchesAuthErrorCode = exports.invalidateSignUpInput = exports.invalidateSignUpCredentials = void 0;
 exports.obMap = obMap;
+exports.stripHTML = exports.processAuthError = void 0;
 exports.textToHexColor = textToHexColor;
-function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
-function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function obMap(ob, callback) {
   if (!ob) return;
   return Object.keys(ob).map(function (key) {
@@ -53,9 +57,8 @@ function textToHexColor(str) {
   var hex = "#".concat(arr1.join(''));
   return hex;
 }
-var SearchParams = exports.SearchParams = /*#__PURE__*/_createClass(function SearchParams(data) {
+function SearchParams(data) {
   var _this = this;
-  _classCallCheck(this, SearchParams);
   this.data = data || {};
   this.size = Object.keys(data).length;
   this.get = function (key) {
@@ -109,11 +112,50 @@ var SearchParams = exports.SearchParams = /*#__PURE__*/_createClass(function Sea
       callback(_this.data[key], key);
     }
   };
-  this.toString = function () {
-    var str = '';
-    for (var key in _this.data) {
-      str += "".concat(key, "=").concat(_this.data[key], "&");
-    }
-    return str.substring(0, str.length - 1);
+}
+var invalidateSignUpCredentials = exports.invalidateSignUpCredentials = function invalidateSignUpCredentials(email, password, reject) {
+  if (!email.match(/^[^\@]{1,}\@[^\.]{1,}\.[a-z]{2,}$/gi)) return reject("Email in wrong format");
+  if (password.length < 5) return reject("Password too short");
+  return false;
+};
+var invalidateSignUpInput = exports.invalidateSignUpInput = function invalidateSignUpInput(input, reject) {
+  if (_typeof(input) !== "object") return reject("Input format incorrect");
+  return false;
+};
+var stripHTML = exports.stripHTML = function stripHTML(html) {
+  var doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || "";
+};
+var convertAuthErrorCodeToLangKey = exports.convertAuthErrorCodeToLangKey = function convertAuthErrorCodeToLangKey(code) {
+  return code.replace(/^auth\//, 'ux.error.auth.').replace(/\-([a-z])/g, function (m, a) {
+    return a.toUpperCase();
+  });
+};
+var matchesAuthErrorCode = exports.matchesAuthErrorCode = function matchesAuthErrorCode(code) {
+  return !!code.match(/^auth\/[a-z\-]{1,}$/, code);
+};
+var processAuthError = exports.processAuthError = function processAuthError(error) {
+  var message = error.message,
+    code = error.code;
+  // console.log(code, message)
+  var response = {
+    origMessage: message,
+    code: code
   };
-});
+  if (!code || code == '') return _objectSpread(_objectSpread({}, response), {}, {
+    message: 'ux.error.auth.unknownErrorOccured'
+  });
+  if (!matchesAuthErrorCode(code)) return _objectSpread(_objectSpread({}, response), {}, {
+    message: 'ux.error.auth.unknownErrorOccured'
+  });
+  return _objectSpread(_objectSpread({}, response), {}, {
+    message: convertAuthErrorCodeToLangKey(code)
+  });
+};
+var checkTranslated = exports.checkTranslated = function checkTranslated(t, key) {
+  if (typeof t !== 'function') return undefined;
+  if (typeof key != 'string') return undefined;
+  var translated = t(key.trim());
+  if (key.trim() == translated.trim()) return false;
+  return true;
+};
