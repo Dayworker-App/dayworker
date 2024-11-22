@@ -1,6 +1,6 @@
 {
   "name": "dayworker",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Dayworker JavaScript SDK for connecting to Firebase.",
   "main": "dist/dayworker.js",
   "scripts": {

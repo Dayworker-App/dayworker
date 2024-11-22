@@ -407,7 +407,7 @@ var DayworkerProvider = exports.DayworkerProvider = function DayworkerProvider(_
                 return _context19.abrupt("return", new Promise(/*#__PURE__*/function () {
                   var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee18(resolve, reject) {
                     var _auth$currentUser;
-                    var _yield$googleMapsGeol, geoPoint, geohash, user, UID, profilesRef, templateName, templateLang;
+                    var _yield$API$googleMaps, geoPoint, geohash, user, UID, profilesRef, templateName, templateLang;
                     return _regeneratorRuntime().wrap(function _callee18$(_context18) {
                       while (1) switch (_context18.prev = _context18.next) {
                         case 0:
@@ -428,11 +428,11 @@ var DayworkerProvider = exports.DayworkerProvider = function DayworkerProvider(_
                             break;
                           }
                           _context18.next = 7;
-                          return googleMapsGeolocate(input.zip);
+                          return API.googleMapsGeolocate(input.zip);
                         case 7:
-                          _yield$googleMapsGeol = _context18.sent;
-                          geoPoint = _yield$googleMapsGeol.geoPoint;
-                          geohash = _yield$googleMapsGeol.geohash;
+                          _yield$API$googleMaps = _context18.sent;
+                          geoPoint = _yield$API$googleMaps.geoPoint;
+                          geohash = _yield$API$googleMaps.geohash;
                           if (input.geoPoint === undefined && geoPoint) input.geoPoint = geoPoint;
                           if (input.geohash === undefined && geohash) input.geohash = geohash;
                           _context18.next = 16;
@@ -549,7 +549,7 @@ var DayworkerProvider = exports.DayworkerProvider = function DayworkerProvider(_
                 return _context22.abrupt("return", new Promise(/*#__PURE__*/function () {
                   var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee21(resolve, reject) {
                     var _auth$currentUser2;
-                    var UID, profilesRef, profileRef, profile, _yield$googleMapsGeol2, geoPoint, geohash;
+                    var UID, profilesRef, profileRef, profile, _yield$API$googleMaps2, geoPoint, geohash;
                     return _regeneratorRuntime().wrap(function _callee21$(_context21) {
                       while (1) switch (_context21.prev = _context21.next) {
                         case 0:
@@ -571,11 +571,11 @@ var DayworkerProvider = exports.DayworkerProvider = function DayworkerProvider(_
                             break;
                           }
                           _context21.next = 11;
-                          return googleMapsGeolocate(data.zip);
+                          return API.googleMapsGeolocate(data.zip);
                         case 11:
-                          _yield$googleMapsGeol2 = _context21.sent;
-                          geoPoint = _yield$googleMapsGeol2.geoPoint;
-                          geohash = _yield$googleMapsGeol2.geohash;
+                          _yield$API$googleMaps2 = _context21.sent;
+                          geoPoint = _yield$API$googleMaps2.geoPoint;
+                          geohash = _yield$API$googleMaps2.geohash;
                           data.geoPoint = geoPoint;
                           data.geohash = geohash;
                         case 16:
