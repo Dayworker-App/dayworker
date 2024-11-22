@@ -127,7 +127,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
                 if (utils.invalidateSignUpCredentials(email, password, reject)) return;
                 if (utils.invalidateSignUpInput(input, reject)) return;
                 if ( input.zip ) {
-                    const { geoPoint, geohash } = await googleMapsGeolocate(input.zip);
+                    const { geoPoint, geohash } = await API.googleMapsGeolocate(input.zip);
                     if (input.geoPoint === undefined && geoPoint) input.geoPoint = geoPoint;
                     if (input.geohash === undefined && geohash) input.geohash = geohash;
                 } else {
@@ -195,7 +195,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
                 const profile = await firebase.store.getDoc( profileRef );
                 if (!profile.exists()) return reject(`Profile ${UID} doesn't exist.`);
                 if (typeof data.zip === 'number') {
-                    const { geoPoint, geohash } = await googleMapsGeolocate(data.zip);
+                    const { geoPoint, geohash } = await API.googleMapsGeolocate(data.zip);
                     data.geoPoint = geoPoint;
                     data.geohash = geohash;
                 }
