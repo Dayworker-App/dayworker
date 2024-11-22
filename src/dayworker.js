@@ -157,7 +157,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
                 firebase.store.setDoc( firebase.store.doc(profilesRef, UID), input, { merge: true }).then((res)=>{
                     console.log(res);
                     // Send Welcome Email
-                    emailUser(email, `email--${templateName}--${templateLang}`, {
+                    API.emailUser(email, `email--${templateName}--${templateLang}`, {
                         name: input.name.trim(),
                         year: new Date().getFullYear()
                     }).then(message=>{
@@ -328,9 +328,9 @@ export const DayworkerProvider = ({ children, firebase }) => {
             // Check if uid exists
             const path = `${uid}/profileImage`;
             return new Promise((resolve, reject) => {
-                uploadFileBase64(base64, path).then(async (res)=>{
-                    const url = await getFileURL(path);
-                    updateProfile({profileImage: url}).then(()=>{
+                API.uploadFileBase64(base64, path).then(async (res)=>{
+                    const url = await API.getFileURL(path);
+                    API.updateProfile({profileImage: url}).then(()=>{
                         resolve(url);
                     }).catch(err=>{
                         reject(err);

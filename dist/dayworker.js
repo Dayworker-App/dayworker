@@ -475,7 +475,7 @@ var DayworkerProvider = exports.DayworkerProvider = function DayworkerProvider(_
                           }).then(function (res) {
                             console.log(res);
                             // Send Welcome Email
-                            emailUser(email, "email--".concat(templateName, "--").concat(templateLang), {
+                            API.emailUser(email, "email--".concat(templateName, "--").concat(templateLang), {
                               name: input.name.trim(),
                               year: new Date().getFullYear()
                             }).then(function (message) {
@@ -851,17 +851,17 @@ var DayworkerProvider = exports.DayworkerProvider = function DayworkerProvider(_
                 // Check if uid exists
                 path = "".concat(uid, "/profileImage");
                 return _context28.abrupt("return", new Promise(function (resolve, reject) {
-                  uploadFileBase64(base64, path).then(/*#__PURE__*/function () {
+                  API.uploadFileBase64(base64, path).then(/*#__PURE__*/function () {
                     var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee27(res) {
                       var url;
                       return _regeneratorRuntime().wrap(function _callee27$(_context27) {
                         while (1) switch (_context27.prev = _context27.next) {
                           case 0:
                             _context27.next = 2;
-                            return getFileURL(path);
+                            return API.getFileURL(path);
                           case 2:
                             url = _context27.sent;
-                            updateProfile({
+                            API.updateProfile({
                               profileImage: url
                             }).then(function () {
                               resolve(url);
