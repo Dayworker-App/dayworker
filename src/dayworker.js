@@ -17,18 +17,19 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import * as geofire from 'geofire-common';
 import { FieldValue, Filter, GeoPoint } from '@react-native-firebase/firestore';
 
+
 import * as utils from './utils';
 export { utils };
-
-const googleMapsConfig = {
-    apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-  };
 
 let env = process.env.NODE_ENV;
 // if (env === 'production') env = '(default)';
 if (env === 'production') {
   env = 'development';
 }
+
+const googleMapsConfig = {
+  apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+};
 
 const cache = new Map();
 
@@ -68,6 +69,15 @@ export const DayworkerProvider = ({
   const [user, setUser] = useState(undefined);
   const [constants, setConstants] = useState(undefined);
 
+  //   const app = !firebase.app.getApps().length
+  //     ? firebase.app.initializeApp(firebaseConfig)
+  //     : firebase.app.getApps()[0];
+  //   const auth = firebase.auth.getAuth(app);
+
+  //   const db = store.getFirestore(app, env);
+  //   const defaultDB =
+  //     env != '(default)' ? store.getFirestore(app, '(default)') : db;
+
   const API = useMemo(
     () => ({
       user,
@@ -92,6 +102,7 @@ export const DayworkerProvider = ({
           if (utils.invalidateSignUpCredentials(email, password, reject)) {
             return;
           }
+          // ADD MORE CHECKS HERE - CHECK FOR REQUIRED FIELDS
           if (utils.invalidateSignUpInput(input, reject)) {
             return;
           }
@@ -218,6 +229,8 @@ export const DayworkerProvider = ({
           'skillLevel',
           'trades',
           'settings',
+          'privacyVersion',
+          'termsVersion',
         ],
       ) => {
         // const DEV = process.env.NODE_ENV == 'development'
@@ -253,7 +266,11 @@ export const DayworkerProvider = ({
           .doc(user.uid)
           .get()
           .then(documentSnapshot => {
+            // console.log('User exists: ', documentSnapshot.exists);
+
             if (documentSnapshot.exists) {
+              // console.log('documentSnapshot.data(): ', documentSnapshot.data());
+
               const userProfile = documentSnapshot.data();
               cache.set('profile', userProfile);
               return userProfile;
@@ -288,9 +305,16 @@ export const DayworkerProvider = ({
 
         const searchParams = Object.fromEntries([...queryParams.entries()]);
 
-        // Not sure why, but the switch statement wasn't working for mobile
-        // TODO: revisit why switch wasn't working
         Object.keys(searchParams).forEach(key => {
+          // const availableWeekdays = [
+          //   Filter('availableWeekdays.m', '==', true),
+          //   Filter('availableWeekdays.t', '==', true),
+          //   Filter('availableWeekdays.w', '==', true),
+          //   Filter('availableWeekdays.T', '==', true),
+          //   Filter('availableWeekdays.f', '==', true),
+          //   Filter('availableWeekdays.s', '==', true),
+          //   Filter('availableWeekdays.S', '==', true),
+          // ];
           const availableWeekdays = [];
 
           if (searchParams[key]) {
@@ -310,6 +334,9 @@ export const DayworkerProvider = ({
                 availableWeekdays.push(
                   Filter(`availableWeekdays.${day}`, '==', true),
                 );
+                // constraints.push(
+                //   Filter(`availableWeekdays.${day}`, '==', true),
+                // );
               });
             }
             if (key === 'settings.userViewType') {
@@ -357,6 +384,7 @@ export const DayworkerProvider = ({
         // });
         const bounds = geofire.geohashQueryBounds(centerArray, radiusInM);
         const promises = [];
+        // console.log('bounds: ', bounds);
         for (const b of bounds) {
           promises.push(
             store
@@ -530,12 +558,13 @@ export const DayworkerProvider = ({
           `https://maps.googleapis.com/maps/api/geocode/json?${q}`,
         );
         const data = await res.json();
+        // console.log('data: ', data);
 
         const response = { geoPoint: null, geohash: null };
         if (data.results.length) {
           for (let component of data.results[0]?.address_components) {
             if (component.types.indexOf('postal_code') > -1) {
-              response.zipcode = parseInt(component.long_name, 10);
+              response.zipcode = parseInt(component.long_name);
             }
           }
         }
@@ -602,6 +631,8 @@ export const DayworkerProvider = ({
       'skillLevel',
       'trades',
       'settings',
+      'privacyVersion',
+      'termsVersion',
     ]).then(c => setConstants(() => c));
     return subscriber; // unsubscribe on unmount
   }, [API, auth]);
