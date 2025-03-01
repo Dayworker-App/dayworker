@@ -1040,7 +1040,7 @@ var DayworkerProvider = exports.DayworkerProvider = function DayworkerProvider(_
         return u;
       });
     });
-    API.getConstants(['badges', 'bizFocus', 'regions', 'skillLevel', 'trades', 'settings']).then(function (c) {
+    API.getConstants(['badges', 'bizFocus', 'regions', 'skillLevel', 'trades', 'settings', 'privacyVersion', 'termsVersion']).then(function (c) {
       return setConstants(function () {
         return c;
       });
