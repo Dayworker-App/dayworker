@@ -2,7 +2,7 @@
 
 // Context Provider Useage:
 
-import { DayworkerContext, dayworkerProvider } from '/providers/dayworker';
+import { DayworkerContext, dayworkerProvider } from 'dayworker';
 const DayworkerProvider = ({children}) => {
     const value = dayworkerProvider();
     return <DayworkerContext.Provider value={value}>{children}</DayworkerContext.Provider>
@@ -68,15 +68,6 @@ export const DayworkerProvider = ({
 }) => {
   const [user, setUser] = useState(undefined);
   const [constants, setConstants] = useState(undefined);
-
-  //   const app = !firebase.app.getApps().length
-  //     ? firebase.app.initializeApp(firebaseConfig)
-  //     : firebase.app.getApps()[0];
-  //   const auth = firebase.auth.getAuth(app);
-
-  //   const db = store.getFirestore(app, env);
-  //   const defaultDB =
-  //     env != '(default)' ? store.getFirestore(app, '(default)') : db;
 
   const API = useMemo(
     () => ({
@@ -306,15 +297,6 @@ export const DayworkerProvider = ({
         const searchParams = Object.fromEntries([...queryParams.entries()]);
 
         Object.keys(searchParams).forEach(key => {
-          // const availableWeekdays = [
-          //   Filter('availableWeekdays.m', '==', true),
-          //   Filter('availableWeekdays.t', '==', true),
-          //   Filter('availableWeekdays.w', '==', true),
-          //   Filter('availableWeekdays.T', '==', true),
-          //   Filter('availableWeekdays.f', '==', true),
-          //   Filter('availableWeekdays.s', '==', true),
-          //   Filter('availableWeekdays.S', '==', true),
-          // ];
           const availableWeekdays = [];
 
           if (searchParams[key]) {
