@@ -17,7 +17,6 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import * as geofire from 'geofire-common';
 import { FieldValue, Filter, GeoPoint } from '@react-native-firebase/firestore';
 
-
 import * as utils from './utils';
 export { utils };
 
@@ -68,6 +67,15 @@ export const DayworkerProvider = ({
 }) => {
   const [user, setUser] = useState(undefined);
   const [constants, setConstants] = useState(undefined);
+
+  //   const app = !firebase.app.getApps().length
+  //     ? firebase.app.initializeApp(firebaseConfig)
+  //     : firebase.app.getApps()[0];
+  //   const auth = firebase.auth.getAuth(app);
+
+  //   const db = store.getFirestore(app, env);
+  //   const defaultDB =
+  //     env != '(default)' ? store.getFirestore(app, '(default)') : db;
 
   const API = useMemo(
     () => ({
@@ -595,6 +603,31 @@ export const DayworkerProvider = ({
       getFileURL: async name => {
         const url = await storage.ref(name).getDownloadURL();
         return url;
+      },
+      deleteAccount: async () => {
+        return new Promise(async (resolve, reject) => {
+          try {
+            // We may want to delete more content. I.e. nudges, favorites, etc.
+            const UID = auth.currentUser?.uid;
+            const profileRef = store.collection('profiles').doc(UID);
+            return profileRef
+              .delete()
+              .then(() => {
+                return auth.currentUser.delete();
+              })
+              .then(() => {
+                return resolve(true);
+              })
+              .catch(error => {
+                reject(error);
+              });
+          } catch (error) {
+            reject(error);
+          }
+        });
+      },
+      sendForgotPasswordEmail: async (email: string) => {
+        return await auth.sendPasswordResetEmail(email);
       },
     }),
     [app, auth, constants, defaultStore, storage, store, user],
