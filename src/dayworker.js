@@ -196,24 +196,23 @@ export const DayworkerProvider = ({
           if (!profile.exists) {
             return reject(`Profile ${UID} doesn't exist.`);
           }
-          if (typeof data.zip === 'number') {
-            const { geoPoint, geohash } = await API.googleMapsGeolocate(
-              data.zip,
-            );
-            data.geoPoint = geoPoint;
-            data.geohash = geohash;
-          }
+          // if (typeof data.zip === 'number') {
+          const { geoPoint, geohash } = await API.googleMapsGeolocate(data.zip);
+          data.geoPoint = geoPoint;
+          data.geohash = geohash;
+          // }
           await store
             .collection('profiles')
             .doc(UID)
             .update(data)
             .then(() => {
               const currentProfile = cache.get('profile');
-              cache.set('profile', {
+              const updatedProfile = {
                 ...currentProfile,
                 ...data,
-              });
-              resolve(data);
+              };
+              cache.set('profile', updatedProfile);
+              resolve(updatedProfile);
             })
             .catch(err => {
               reject(err);
