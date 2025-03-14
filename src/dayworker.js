@@ -405,7 +405,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
     useEffect(()=>{
         auth.onAuthStateChanged(u => setUser(()=>u));
         API.getConstants([
-            'badges', 'bizFocus', 'regions', 'skillLevel', 'trades', 'settings', 'privacyVersion', 'termsVersion'
+            'badges', 'bizFocus', 'regions', 'skillLevel', 'trades', 'skills', 'settings', 'privacyVersion', 'termsVersion'
         ]).then(c=>setConstants(()=>c));
     }, [API]);
     // return React.createElement(DayworkerContext.Provider, {value: API}, [...children]);
