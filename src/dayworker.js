@@ -1,17 +1,3 @@
-/**
-
-// Context Provider Useage:
-
-import { DayworkerContext, dayworkerProvider } from 'dayworker';
-const DayworkerProvider = ({children}) => {
-    const value = dayworkerProvider();
-    return <DayworkerContext.Provider value={value}>{children}</DayworkerContext.Provider>
-}
-
-<DayworkerProvider>{children}</DayworkerProvider>
-
-*/
-
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 
 import * as geofire from 'geofire-common';
@@ -21,7 +7,7 @@ import * as utils from './utils';
 export { utils };
 
 let env = process.env.NODE_ENV;
-// if (env === 'production') env = '(default)';
+
 if (env === 'production') {
   env = 'development';
 }
@@ -57,6 +43,8 @@ export const DayworkerContext = React.createContext({
   getFileURL: async name => null,
   uploadResume: async (uid, base64, callbacks) => url,
   deleteResume: async uid => null,
+  deleteAccount: async () => null,
+  sendForgotPasswordEmail: async (email: string) => null,
 });
 
 export const useDayworker = () => useContext(DayworkerContext);
@@ -67,15 +55,6 @@ export const DayworkerProvider = ({
 }) => {
   const [user, setUser] = useState(undefined);
   const [constants, setConstants] = useState(undefined);
-
-  //   const app = !firebase.app.getApps().length
-  //     ? firebase.app.initializeApp(firebaseConfig)
-  //     : firebase.app.getApps()[0];
-  //   const auth = firebase.auth.getAuth(app);
-
-  //   const db = store.getFirestore(app, env);
-  //   const defaultDB =
-  //     env != '(default)' ? store.getFirestore(app, '(default)') : db;
 
   const API = useMemo(
     () => ({
@@ -92,7 +71,7 @@ export const DayworkerProvider = ({
           password.trim(),
         );
       },
-      signOut: async () => auth.signOut(),
+      signOut: async () => await auth.signOut(),
       signUp: async (email, password, input, userType, lang) => {
         email = email.trim().toLowerCase();
         password = password.trim();
@@ -226,6 +205,7 @@ export const DayworkerProvider = ({
           'regions',
           'skillLevel',
           'trades',
+          'skills',
           'settings',
           'privacyVersion',
           'termsVersion',
@@ -251,14 +231,17 @@ export const DayworkerProvider = ({
         cache.set('constants', _const);
         return _const;
       },
-      getAuthenticatedUserProfile: async () => {
+      /**
+       * Return the authenticated user's profile.
+       * @param {Type} noCache - When set to true, will skip using the cache and fetch directly from firebase.
+       */
+      getAuthenticatedUserProfile: async (noCache = false) => {
         if (!user) {
           return null;
         }
-        if (cache.has('profile')) {
+        if (!noCache && cache.has('profile')) {
           return cache.get('profile');
         }
-
         return await store
           .collection('profiles')
           .doc(user.uid)
@@ -290,7 +273,7 @@ export const DayworkerProvider = ({
       },
       geolocateProfiles: async (center, radiusInM, queryParams) => {
         if (!queryParams.has('settings.userViewType')) {
-          queryParams.append('settings.userViewType', '1');
+          queryParams.append('settings.userViewType', 1);
         }
         const centerArray = Array.isArray(center)
           ? center
@@ -316,6 +299,15 @@ export const DayworkerProvider = ({
                 Filter('trades', 'array-contains-any', skillsArray),
               );
             }
+            if (key === 'bizFocus') {
+              const bizFocusArray = searchParams[key]
+                .split(',')
+                .map(s => parseInt(s, 10));
+
+              constraints.push(
+                Filter('bizFocus', 'array-contains-any', bizFocusArray),
+              );
+            }
             if (key === 'availableWeekdays') {
               const days = searchParams[key].split(',');
               availableWeekdays.length = 0;
@@ -339,41 +331,9 @@ export const DayworkerProvider = ({
           }
         });
 
-        // queryParams.forEach((value, name) => {
-        //   if (value === '') {
-        //     return;
-        //   }
-        //   switch (name) {
-        //     case 'skills':
-        //       const trades = [];
-        //       value
-        //         .split(',')
-        //         .map(v =>
-        //           trades.push(
-        //             store.where('trades', 'array-contains', parseInt(v)),
-        //           ),
-        //         );
-        //       constraints.push(store.and(store.or(...trades)));
-        //       break;
-        //     case 'availableWeekdays':
-        //       const days = [];
-        //       value
-        //         .split(',')
-        //         .map(v => days.push(store.where(`${name}.${v}`, '==', true)));
-        //       constraints.push(store.and(store.or(...days)));
-        //       break;
-        //     case 'settings.userViewType':
-        //       constraints.push(store.where(name, '==', parseInt(value)));
-        //       break;
-        //     default:
-        //       constraints.push(
-        //         store.where(name, '==', Boolean(parseInt(value))),
-        //       );
-        //   }
-        // });
         const bounds = geofire.geohashQueryBounds(centerArray, radiusInM);
         const promises = [];
-        // console.log('bounds: ', bounds);
+
         for (const b of bounds) {
           promises.push(
             store
@@ -388,22 +348,6 @@ export const DayworkerProvider = ({
               .endAt(b[1])
               .get(),
           );
-
-          // const q = store.query(
-          //   store.collection('profiles'),
-          //   store.and(
-          //     ...constraints,
-          //     // ...constraints.map(processConstraints),
-          //   ),
-          //   store.orderBy('geohash'),
-          //   store.startAt(b[0]),
-          //   store.endAt(b[1]),
-          //   //...constraints
-          // );
-          // // const profile = await store.getDocs(q);
-          // const profile = await store.getDocs(q);
-          // delete profile.email;
-          // promises.push(profile);
         }
         const snapshots = await Promise.all(promises);
         const matchingDocs = [];
@@ -547,7 +491,6 @@ export const DayworkerProvider = ({
           `https://maps.googleapis.com/maps/api/geocode/json?${q}`,
         );
         const data = await res.json();
-        // console.log('data: ', data);
 
         const response = { geoPoint: null, geohash: null };
         if (data.results.length) {
@@ -579,9 +522,9 @@ export const DayworkerProvider = ({
         // const storageRef = storage.ref(path);
         const task = storage.ref(path).putFile(base64);
         task.on('state_changed', taskSnapshot => {
-          console.log(
-            `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
-          );
+          // console.log(
+          //   `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+          // );
           callbacks?.onUploadProgress?.({
             progress:
               (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) * 100,
@@ -590,7 +533,7 @@ export const DayworkerProvider = ({
 
         return task
           .then(() => {
-            console.log('Image uploaded to the bucket!');
+            // console.log('Image uploaded to the bucket!');
             callbacks?.onSuccess?.(task);
             return task;
           })
@@ -644,6 +587,7 @@ export const DayworkerProvider = ({
       'regions',
       'skillLevel',
       'trades',
+      'skills',
       'settings',
       'privacyVersion',
       'termsVersion',
