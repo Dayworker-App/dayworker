@@ -28,7 +28,8 @@ export const DayworkerContext = React.createContext({
   auth: undefined, //auth,
 
   signOut: async () => null,
-  signIn: async (email, password) => null,
+  signInWithPhoneNumber: async (phoneNumber: string) => null,
+  signInWithEmailAndPassword: async (email, password) => null,
   signUp: async (email, password, input, userType, lang) => null,
   sendUpdatePasswordEmail: async email => null,
   updateProfile: async data => null,
@@ -45,13 +46,31 @@ export const DayworkerContext = React.createContext({
   deleteResume: async uid => null,
   deleteAccount: async () => null,
   sendForgotPasswordEmail: async (email: string) => null,
+  verifyPhoneNumber: async (phone: string) => null,
+  updatePhoneNumber: async (verificationId: string, code: string) => null,
+  linkPhoneNumber: async (verificationId: string, code: string) => null,
+  updateUserAuthEmail: async (email: string) => null,
+  reauthenticateUserWithEmailAndPassword: (email: string, password: string) =>
+    null,
+  reauthenticateUserWithPhoneNumber: async (
+    verificationId: string,
+    code: string,
+  ) => null,
 });
 
 export const useDayworker = () => useContext(DayworkerContext);
 
 export const DayworkerProvider = ({
   children,
-  firebase: { app, auth, storage, store, defaultStore },
+  firebase: {
+    app,
+    auth,
+    storage,
+    store,
+    defaultStore,
+    PhoneAuthProvider,
+    EmailAuthProvider,
+  },
 }) => {
   const [user, setUser] = useState(undefined);
   const [constants, setConstants] = useState(undefined);
@@ -65,11 +84,124 @@ export const DayworkerProvider = ({
       firebaseApp: app,
       auth: auth,
 
-      signIn: async (email, password) => {
-        return auth.signInWithEmailAndPassword(
+      signInWithEmailAndPassword: async (email, password) => {
+        return await auth.signInWithEmailAndPassword(
           email.toLowerCase().trim(),
           password.trim(),
         );
+      },
+      signInWithPhoneNumber: async phoneNumber => {
+        return new Promise(async (resolve, reject) => {
+          await auth
+            .signInWithPhoneNumber(phoneNumber.trim())
+            .then(confirmation => resolve(confirmation))
+            .catch(error => reject(error));
+        });
+      },
+      verifyPhoneNumber: async phoneNumber => {
+        return new Promise(async (resolve, reject) => {
+          await auth
+            .verifyPhoneNumber(phoneNumber.trim())
+            .then(confirmation => resolve(confirmation))
+            .catch(error => reject(error));
+        });
+      },
+      updatePhoneNumber: async (verificationId, code) => {
+        return new Promise(async (resolve, reject) => {
+          const credential = PhoneAuthProvider.credential(
+            verificationId,
+            code.trim(),
+          );
+          await auth.currentUser
+            .updatePhoneNumber(credential)
+            .then(() => {
+              resolve(true);
+            })
+            .catch(error => reject(error));
+        });
+      },
+      linkPhoneNumber: async (verificationId, code) => {
+        return new Promise(async (resolve, reject) => {
+          const credential = PhoneAuthProvider.credential(
+            verificationId,
+            code.trim(),
+          );
+          await auth.currentUser
+            .linkWithCredential(credential)
+            .then(userData => {
+              API.setUser(userData.user);
+              resolve(userData);
+            })
+            .catch(error => reject(error));
+        });
+      },
+      reauthenticateUserWithPhoneNumber: async (verificationId, code) => {
+        return new Promise(async (resolve, reject) => {
+          const credential = PhoneAuthProvider.credential(
+            verificationId,
+            code.trim(),
+          );
+          await auth.currentUser
+            .reauthenticateWithCredential(credential)
+            .then(userData => {
+              API.setUser(userData.user);
+              resolve(userData);
+            })
+            .catch(error => reject(error));
+        });
+      },
+      reauthenticateUserWithEmailAndPassword: async (email, password) => {
+        return new Promise(async (resolve, reject) => {
+          const credential = EmailAuthProvider.credential(
+            email.trim() || auth.currentUser.email,
+            password.trim(),
+          );
+          await auth.currentUser
+            .reauthenticateWithCredential(credential)
+            .then(userData => {
+              API.setUser(userData.user);
+              resolve(userData);
+            })
+            .catch(error => reject(error));
+        });
+      },
+      unlinkAuthProvider: async providerId => {
+        return new Promise(async (resolve, reject) => {
+          await auth.currentUser
+            .unlink(providerId)
+            .then(res => {
+              resolve(res);
+            })
+            .catch(error => reject(error));
+        });
+      },
+      sendUpdatePasswordEmail: async email => {
+        const emailClean = email.trim().toLowerCase();
+        let query = new URLSearchParams({ email: emailClean });
+        const domain = window.location.protocol + '//' + window.location.host;
+        const actionCodeSettings = {
+          url: `${domain}/user/signin/?${query.toString()}`,
+          /* iOS: {
+                   bundleId: 'com.example.ios'
+                },
+                android: {
+                  packageName: 'com.example.android',
+                  installApp: true,
+                  minimumVersion: '12'
+                }, */
+          handleCodeInApp: true,
+        };
+        return auth.sendPasswordResetEmail(emailClean, actionCodeSettings);
+      },
+      updateUserAuthEmail: async newEmail => {
+        return new Promise(async (resolve, reject) => {
+          await auth.currentUser
+            .updateEmail(newEmail)
+            .then(() => {
+              resolve(true);
+            })
+            .catch(error => reject(error));
+        });
       },
       signOut: async () => await auth.signOut(),
       signUp: async (email, password, input, userType, lang) => {
@@ -149,23 +281,39 @@ export const DayworkerProvider = ({
             });
         });
       },
-      sendUpdatePasswordEmail: async email => {
-        const emailClean = email.trim().toLowerCase();
-        let query = new URLSearchParams({ email: emailClean });
-        const domain = window.location.protocol + '//' + window.location.host;
-        const actionCodeSettings = {
-          url: `${domain}/user/signin/?${query.toString()}`,
-          /* iOS: {
-                   bundleId: 'com.example.ios'
-                },
-                android: {
-                  packageName: 'com.example.android',
-                  installApp: true,
-                  minimumVersion: '12'
-                }, */
-          handleCodeInApp: true,
-        };
-        return auth.sendPasswordResetEmail(emailClean, actionCodeSettings);
+      createUserProfile: async input => {
+        const UID = auth.currentUser?.uid;
+        if (!UID) {
+          return reject('New UID not authenticated');
+        }
+        if (input.uid === undefined) {
+          input.uid = UID;
+        }
+
+        const userType = input.userViewType || 1;
+
+        const templateName = `join-${userType.toLowerCase()}`;
+        const templateLang = lang.toUpperCase();
+
+        store
+          .collection('profiles')
+          .doc(UID)
+          .set(input)
+          .then(res => {
+            // Send Welcome Email
+            API.emailUser(email, `email--${templateName}--${templateLang}`, {
+              name: input.name.trim(),
+              year: new Date().getFullYear(),
+            })
+              .then(message => {
+                resolve(input);
+              })
+              .catch(console.error);
+          })
+          .catch(err => {
+            console.error(err);
+            reject('Profile data not loaded');
+          });
       },
       updateProfile: async data => {
         return new Promise(async (resolve, reject) => {
@@ -175,11 +323,24 @@ export const DayworkerProvider = ({
           if (!profile.exists) {
             return reject(`Profile ${UID} doesn't exist.`);
           }
-          // if (typeof data.zip === 'number') {
-          const { geoPoint, geohash } = await API.googleMapsGeolocate(data.zip);
-          data.geoPoint = geoPoint;
-          data.geohash = geohash;
-          // }
+
+          if (data.email) {
+            try {
+              await API.updateUserAuthEmail(data.email);
+            } catch (e) {
+              reject(e);
+            }
+          } else if (data.phone) {
+            await API.verifyPhoneNumber(data.phone);
+          }
+
+          if (data.zip) {
+            const { geoPoint, geohash } = await API.googleMapsGeolocate(
+              data.zip,
+            );
+            data.geoPoint = geoPoint;
+            data.geohash = geohash;
+          }
           await store
             .collection('profiles')
             .doc(UID)
@@ -333,7 +494,7 @@ export const DayworkerProvider = ({
 
         const bounds = geofire.geohashQueryBounds(centerArray, radiusInM);
         const promises = [];
-
+        // console.log('bounds: ', bounds);
         for (const b of bounds) {
           promises.push(
             store
@@ -491,6 +652,7 @@ export const DayworkerProvider = ({
           `https://maps.googleapis.com/maps/api/geocode/json?${q}`,
         );
         const data = await res.json();
+        // console.log('data: ', data);
 
         const response = { geoPoint: null, geohash: null };
         if (data.results.length) {
@@ -572,10 +734,21 @@ export const DayworkerProvider = ({
         return await auth.sendPasswordResetEmail(email);
       },
     }),
-    [app, auth, constants, defaultStore, storage, store, user],
+    [
+      EmailAuthProvider,
+      PhoneAuthProvider,
+      app,
+      auth,
+      constants,
+      defaultStore,
+      storage,
+      store,
+      user,
+    ],
   );
   useEffect(() => {
     const subscriber = auth.onAuthStateChanged(u => {
+      // console.log('Auth State Changed: ', JSON.stringify(u || {}, null, 2));
       setUser(() => u);
       if (!u) {
         cache.clear();
