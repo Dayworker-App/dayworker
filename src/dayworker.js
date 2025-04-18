@@ -1,3 +1,17 @@
+/**
+
+// Context Provider Useage:
+
+import { DayworkerContext, dayworkerProvider } from 'dayworker';
+const DayworkerProvider = ({children}) => {
+    const value = dayworkerProvider();
+    return <DayworkerContext.Provider value={value}>{children}</DayworkerContext.Provider>
+}
+
+<DayworkerProvider>{children}</DayworkerProvider>
+
+*/
+
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 
 import * as geofire from 'geofire-common';
@@ -7,7 +21,7 @@ import * as utils from './utils';
 export { utils };
 
 let env = process.env.NODE_ENV;
-
+// if (env === 'production') env = '(default)';
 if (env === 'production') {
   env = 'development';
 }
@@ -75,6 +89,15 @@ export const DayworkerProvider = ({
   const [user, setUser] = useState(undefined);
   const [constants, setConstants] = useState(undefined);
 
+  //   const app = !firebase.app.getApps().length
+  //     ? firebase.app.initializeApp(firebaseConfig)
+  //     : firebase.app.getApps()[0];
+  //   const auth = firebase.auth.getAuth(app);
+
+  //   const db = store.getFirestore(app, env);
+  //   const defaultDB =
+  //     env != '(default)' ? store.getFirestore(app, '(default)') : db;
+
   const API = useMemo(
     () => ({
       user,
@@ -106,6 +129,14 @@ export const DayworkerProvider = ({
             .catch(error => reject(error));
         });
       },
+      verifyEmailAddress: async email => {
+        return new Promise(async (resolve, reject) => {
+          await auth.currentUser
+            ?.sendEmailVerification(email.trim())
+            .then(confirmation => resolve(confirmation))
+            .catch(error => reject(error));
+        });
+      },
       updatePhoneNumber: async (verificationId, code) => {
         return new Promise(async (resolve, reject) => {
           const credential = PhoneAuthProvider.credential(
@@ -113,9 +144,11 @@ export const DayworkerProvider = ({
             code.trim(),
           );
           await auth.currentUser
-            .updatePhoneNumber(credential)
-            .then(() => {
-              resolve(true);
+            ?.updatePhoneNumber(credential)
+            .then(async () => {
+              await auth.currentUser?.reload();
+              setUser(() => auth.currentUser);
+              resolve(auth.currentUser);
             })
             .catch(error => reject(error));
         });
@@ -127,9 +160,24 @@ export const DayworkerProvider = ({
             code.trim(),
           );
           await auth.currentUser
-            .linkWithCredential(credential)
+            ?.linkWithCredential(credential)
             .then(userData => {
-              API.setUser(userData.user);
+              setUser(userData.user);
+              resolve(userData);
+            })
+            .catch(error => reject(error));
+        });
+      },
+      linkEmailAddress: async (email, password) => {
+        return new Promise(async (resolve, reject) => {
+          const credential = EmailAuthProvider.credential(
+            email.trim() || auth.currentUser.email,
+            password,
+          );
+          await auth.currentUser
+            ?.linkWithCredential(credential)
+            .then(userData => {
+              setUser(userData.user);
               resolve(userData);
             })
             .catch(error => reject(error));
@@ -142,35 +190,30 @@ export const DayworkerProvider = ({
             code.trim(),
           );
           await auth.currentUser
-            .reauthenticateWithCredential(credential)
-            .then(userData => {
-              API.setUser(userData.user);
-              resolve(userData);
-            })
+            ?.reauthenticateWithCredential(credential)
+            .then(() => resolve())
             .catch(error => reject(error));
         });
       },
       reauthenticateUserWithEmailAndPassword: async (email, password) => {
         return new Promise(async (resolve, reject) => {
           const credential = EmailAuthProvider.credential(
-            email.trim() || auth.currentUser.email,
-            password.trim(),
+            email.trim() || auth.currentUser?.email,
+            password,
           );
           await auth.currentUser
-            .reauthenticateWithCredential(credential)
-            .then(userData => {
-              API.setUser(userData.user);
-              resolve(userData);
-            })
+            ?.reauthenticateWithCredential(credential)
+            .then(() => resolve())
             .catch(error => reject(error));
         });
       },
       unlinkAuthProvider: async providerId => {
         return new Promise(async (resolve, reject) => {
           await auth.currentUser
-            .unlink(providerId)
-            .then(res => {
-              resolve(res);
+            ?.unlink(providerId)
+            .then(userData => {
+              setUser(userData);
+              resolve(userData);
             })
             .catch(error => reject(error));
         });
@@ -196,9 +239,11 @@ export const DayworkerProvider = ({
       updateUserAuthEmail: async newEmail => {
         return new Promise(async (resolve, reject) => {
           await auth.currentUser
-            .updateEmail(newEmail)
-            .then(() => {
-              resolve(true);
+            ?.updateEmail(newEmail)
+            .then(async () => {
+              await auth.currentUser?.reload();
+              setUser(() => auth.currentUser);
+              resolve(auth.currentUser);
             })
             .catch(error => reject(error));
         });
@@ -226,6 +271,11 @@ export const DayworkerProvider = ({
             if (input.geohash === undefined && geohash) {
               input.geohash = geohash;
             }
+            const location = await API.googleMapsReverseGeocode(
+              geoPoint.latitude,
+              geoPoint.longitude,
+            );
+            input.region = `${location.city}, ${location.state}`;
           } else {
             if (input.geoPoint === undefined) {
               input.geoPoint = null;
@@ -270,9 +320,11 @@ export const DayworkerProvider = ({
                 name: input.name.trim(),
                 year: new Date().getFullYear(),
               })
-                .then(message => {
-                  resolve(input);
-                })
+                // .then(message => {
+                //   // Send verification email
+                //   API.verifyEmailAddress(email);
+                // })
+                .then(() => resolve(input))
                 .catch(console.error);
             })
             .catch(err => {
@@ -280,40 +332,6 @@ export const DayworkerProvider = ({
               reject('Profile data not loaded');
             });
         });
-      },
-      createUserProfile: async input => {
-        const UID = auth.currentUser?.uid;
-        if (!UID) {
-          return reject('New UID not authenticated');
-        }
-        if (input.uid === undefined) {
-          input.uid = UID;
-        }
-
-        const userType = input.userViewType || 1;
-
-        const templateName = `join-${userType.toLowerCase()}`;
-        const templateLang = lang.toUpperCase();
-
-        store
-          .collection('profiles')
-          .doc(UID)
-          .set(input)
-          .then(res => {
-            // Send Welcome Email
-            API.emailUser(email, `email--${templateName}--${templateLang}`, {
-              name: input.name.trim(),
-              year: new Date().getFullYear(),
-            })
-              .then(message => {
-                resolve(input);
-              })
-              .catch(console.error);
-          })
-          .catch(err => {
-            console.error(err);
-            reject('Profile data not loaded');
-          });
       },
       updateProfile: async data => {
         return new Promise(async (resolve, reject) => {
@@ -330,8 +348,6 @@ export const DayworkerProvider = ({
             } catch (e) {
               reject(e);
             }
-          } else if (data.phone) {
-            await API.verifyPhoneNumber(data.phone);
           }
 
           if (data.zip) {
@@ -340,6 +356,11 @@ export const DayworkerProvider = ({
             );
             data.geoPoint = geoPoint;
             data.geohash = geohash;
+            const location = await API.googleMapsReverseGeocode(
+              geoPoint.latitude,
+              geoPoint.longitude,
+            );
+            data.region = `${location.city}, ${location.state}`;
           }
           await store
             .collection('profiles')
@@ -645,6 +666,35 @@ export const DayworkerProvider = ({
             });
         });
       },
+      googleMapsReverseGeocode: async (lat, lng) => {
+        // TODO: merge this with googleMapsGeolocate by passing query params or string as argument
+        const key = googleMapsConfig.apiKey;
+        const q = new URLSearchParams({
+          latlng: [lat, lng].join(','),
+          key,
+        }).toString();
+        const res = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?${q}`,
+        );
+        const data = await res.json();
+        let response = { city: null, state: null };
+        if (data.results.length) {
+          for (let component of data.results[0]?.address_components) {
+            if (component.types.indexOf('locality') > -1) {
+              response.city = component.long_name;
+            } else if (component.types.indexOf('sublocality') > -1) {
+              response.city = component.long_name;
+            } else if (component.types.indexOf('neighborhood') > -1) {
+              response.city = component.long_name;
+            }
+            if (component.types.indexOf('administrative_area_level_1') > -1) {
+              response.state = component.short_name;
+            }
+          }
+        }
+
+        return response;
+      },
       googleMapsGeolocate: async address => {
         const key = googleMapsConfig.apiKey;
         const q = new URLSearchParams({ address, key }).toString();
@@ -717,7 +767,7 @@ export const DayworkerProvider = ({
             return profileRef
               .delete()
               .then(() => {
-                return auth.currentUser.delete();
+                return auth.currentUser?.delete?.();
               })
               .then(() => {
                 return resolve(true);
