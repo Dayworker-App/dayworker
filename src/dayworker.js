@@ -20,11 +20,11 @@ import { FieldValue, Filter, GeoPoint } from '@react-native-firebase/firestore';
 import * as utils from './utils';
 export { utils };
 
-let env = process.env.NODE_ENV;
+// let env = process.env.NODE_ENV;
 // if (env === 'production') env = '(default)';
-if (env === 'production') {
-  env = 'development';
-}
+// if (env === 'production') {
+//   env = 'development';
+// }
 
 const googleMapsConfig = {
   apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
@@ -47,6 +47,7 @@ export const DayworkerContext = React.createContext({
   signUp: async (email, password, input, userType, lang) => null,
   sendUpdatePasswordEmail: async email => null,
   updateProfile: async data => null,
+  getUserProfileById: async (userId: string): any => null,
   getConstants: async docs => null,
   getAuthenticatedUserProfile: async () => null,
   getJobsInArea: async (area, onComplete) => null,
@@ -129,10 +130,10 @@ export const DayworkerProvider = ({
             .catch(error => reject(error));
         });
       },
-      verifyEmailAddress: async email => {
+      verifyEmailAddress: async () => {
         return new Promise(async (resolve, reject) => {
           await auth.currentUser
-            ?.sendEmailVerification(email.trim())
+            ?.sendEmailVerification()
             .then(confirmation => resolve(confirmation))
             .catch(error => reject(error));
         });
@@ -333,6 +334,19 @@ export const DayworkerProvider = ({
             });
         });
       },
+      getUserProfileById: async userId => {
+        return new Promise(async (resolve, reject) => {
+          if (!userId) {
+            return reject('No userId provided');
+          }
+          const profile = await store.collection('profiles').doc(userId).get();
+          if (!profile.exists) {
+            return reject(`Profile ${userId} doesn't exist.`);
+          }
+          const userProfile = profile.data();
+          resolve(userProfile);
+        });
+      },
       updateProfile: async data => {
         return new Promise(async (resolve, reject) => {
           const UID = auth.currentUser?.uid;
@@ -455,6 +469,7 @@ export const DayworkerProvider = ({
       },
       geolocateProfiles: async (center, radiusInM, queryParams) => {
         if (!queryParams.has('settings.userViewType')) {
+          // console.log('query params do NOT contain userViewType');
           queryParams.append('settings.userViewType', 1);
         }
         const centerArray = Array.isArray(center)
@@ -467,6 +482,10 @@ export const DayworkerProvider = ({
         queryParams.delete('zoom');
 
         const searchParams = Object.fromEntries([...queryParams.entries()]);
+        // console.log(
+        //   'SDK searchParams: ',
+        //   JSON.stringify(searchParams, null, 2),
+        // );
 
         Object.keys(searchParams).forEach(key => {
           const availableWeekdays = [];
@@ -487,7 +506,11 @@ export const DayworkerProvider = ({
                 .map(s => parseInt(s, 10));
 
               constraints.push(
-                Filter('bizFocus', 'array-contains-any', bizFocusArray),
+                Filter(
+                  'contractorData.bizFocus',
+                  'array-contains-any',
+                  bizFocusArray,
+                ),
               );
             }
             if (key === 'availableWeekdays') {
