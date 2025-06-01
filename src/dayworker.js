@@ -477,7 +477,14 @@ export const DayworkerProvider = ({
           : [center._latitude, center._longitude];
         radiusInM = radiusInM || 50 * 1000;
 
-        const constraints = [];
+        const constraints = [
+          // Filter by test accounts for Apple and Google Play review
+          Filter('email', 'not-in', [
+            'test.worker@dayworker.co',
+            'test.contractor@dayworker.co',
+          ]),
+        ];
+
         queryParams.delete('geoPoint');
         queryParams.delete('zoom');
 
