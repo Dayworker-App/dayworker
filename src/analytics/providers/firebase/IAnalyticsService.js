@@ -1,3 +1,5 @@
+// interface for Analytics Service => needs typescript
+
 // type SignupSuccessAttributes = {
 //   // sign up fields
 // };
@@ -48,12 +50,12 @@
 // };
 
 // export default interface IAnalyticsService {
-//   trackSignUpClicked?: () => void;
+//   trackSignUpSubmitted?: () => void;
 //   trackSignUpSuccess?: (attributes: SignupSuccessAttributes) => void;
 //   trackSignUpFailed?: (attributes: SignupFailedAttributes) => void;
 //   trackLoginSuccess?: (attributes: LoginSuccessAttributes) => void;
 //   trackLogoutSuccess?: () => void;
-//   trackAppLaunched?: () => void;
+//   trackAppOpened?: () => void;
 //   trackAppBackgrounded?: () => void;
 //   trackAppForegrounded?: () => void;
 //   trackSearchSubmitted?: (attributes: SearchSubmittedAttributes) => void;

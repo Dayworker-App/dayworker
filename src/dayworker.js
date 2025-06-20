@@ -20,7 +20,8 @@ import { FieldValue, Filter, GeoPoint } from '@react-native-firebase/firestore';
 import * as utils from './utils';
 export { utils };
 
-import useFirebaseAnalytics from './analytics/providers/firebase/useFirebaseAnalytics';
+// import useFirebaseAnalytics from './analytics/providers/firebase/useFirebaseAnalytics';
+import FirebaseAnalyticsService from './analytics/providers/firebase/firebaseAnalyticsService';
 
 // let env = process.env.NODE_ENV;
 // if (env === 'production') env = '(default)';
@@ -83,9 +84,6 @@ export const DayworkerProvider = ({
     analytics,
     storage,
     store,
-    defaultStore,
-    PhoneAuthProvider,
-    EmailAuthProvider,
   },
 }) => {
   const [user, setUser] = useState(undefined);
@@ -106,6 +104,8 @@ export const DayworkerProvider = ({
     signOut,
     verifyPhoneNumber,
     reauthenticateWithCredential,
+    PhoneAuthProvider,
+    EmailAuthProvider,
   } = firebase.auth;
   const auth = getAuth(app);
 
@@ -113,7 +113,14 @@ export const DayworkerProvider = ({
   //   const defaultDB =
   //     env != '(default)' ? store.getFirestore(app, '(default)') : db;
 
-  const firebaseAnalytics = useFirebaseAnalytics(analytics);
+  // const firebaseAnalytics = useFirebaseAnalytics(analytics);
+
+  const firebaseAnalytics = useMemo(() => {
+    const fbAnalytics = new FirebaseAnalyticsService(analytics);
+    // Singleton trick. Remove constructor to prevent object creating.
+    fbAnalytics.constructor = null;
+    return fbAnalytics;
+  }, [analytics]);
 
   const API = useMemo(
     () => ({
@@ -699,10 +706,10 @@ export const DayworkerProvider = ({
           data.currentUID = auth?.currentUser?.uid;
           data.timestamp = FieldValue.serverTimestamp(); // store.serverTimestamp(); // Timestamp.now(); // new Date().getTime();
 
-          const mailRef = defaultStore?.collection('mail');
+          const mailRef = store?.collection('mail');
           const emailDoc = mailRef.doc().id;
 
-          defaultStore
+          store
             .collection('mail')
             .doc(emailDoc)
             .set(data, { merge: true })
@@ -841,7 +848,7 @@ export const DayworkerProvider = ({
       auth,
       constants,
       createUserWithEmailAndPassword,
-      defaultStore,
+      store,
       deleteUser,
       firebaseAnalytics,
       reauthenticateWithCredential,
@@ -850,7 +857,6 @@ export const DayworkerProvider = ({
       signInWithPhoneNumber,
       signOut,
       storage,
-      store,
       user,
       verifyPhoneNumber,
     ],

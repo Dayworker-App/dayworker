@@ -1,4 +1,10 @@
-const FirebaseEvents = {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+var FirebaseEvents = {
   SIGN_UP_SUBMITTED: 'sign_up_submitted',
   SIGN_UP_SUCCESS: 'sign_up_success',
   SIGN_UP_FAILED: 'sign_up_failed',
@@ -18,7 +24,6 @@ const FirebaseEvents = {
   SEARCH_SUBMITTED: 'search_submitted',
   SEARCH_RESULT_CLICKED: 'search_result_clicked',
   SEARCH_RESULT_VIEWED: 'search_result_viewed',
-  PROFILE_VIEWED: 'profile_viewed',
+  PROFILE_VIEWED: 'profile_viewed'
 };
-
-export default FirebaseEvents;
+var _default = exports["default"] = FirebaseEvents;

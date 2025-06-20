@@ -16,135 +16,150 @@ const useFirebaseAnalytics = firebaseAnalytics => {
   );
 
   // DEPRECATED: Use track<EventName> instead
-  // eslint-disable-next-line no-unused-vars
-  const trackEvent = useCallback(
-    async (eventName /*: EventNameType*/, eventParams /*: any*/) => {
-      await logEvent(analytics, eventName, eventParams);
-    },
-    [analytics, logEvent],
-  );
+  // const trackEvent = useCallback(
+  //   async (eventName /*: EventNameType*/, eventParams /*: any*/) => {
+  //     await logEvent(analytics, eventName, eventParams);
+  //   },
+  //   [analytics, logEvent],
+  // );
 
-  const trackSignUpClicked = useCallback(
-    async (eventParams) => {
-      await logEvent(analytics, FirebaseEvents.SIGN_UP_CLICKED, eventParams);
+  const trackSignUpSubmitted = useCallback(
+    async eventParams => {
+      await logEvent(analytics, FirebaseEvents.SIGN_UP_SUBMITTED, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackSignUpSuccess = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.SIGN_UP_SUCCESS, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackSignUpFailed = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.SIGN_UP_FAILED, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackLoginSuccess = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.LOG_IN_SUCCESS, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackLogoutSuccess = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.LOG_OUT_SUCCESS, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackAppLaunched = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.APP_LAUNCHED, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackAppForegrounded = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.APP_FOREGROUNDED, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackAppBackgrounded = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.APP_BACKGROUNDED, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackChatMessageCreated = useCallback(
-    async (eventParams) => {
-      await logEvent(analytics, FirebaseEvents.CHAT_MESSAGE_CREATED, eventParams);
+    async eventParams => {
+      await logEvent(
+        analytics,
+        FirebaseEvents.CHAT_MESSAGE_CREATED,
+        eventParams,
+      );
     },
     [analytics, logEvent],
   );
 
   const trackChatMessageSent = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.CHAT_MESSAGE_SENT, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackSubscribeClicked = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.SUBSCRIBE_CLICKED, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackSubscribeSuccess = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.SUBSCRIBE_SUCCESS, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackSubscribeFailed = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.SUBSCRIBE_FAILED, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackSubscriptionExpired = useCallback(
-    async (eventParams) => {
-      await logEvent(analytics, FirebaseEvents.SUBSCRIPTION_EXPIRED, eventParams);
+    async eventParams => {
+      await logEvent(
+        analytics,
+        FirebaseEvents.SUBSCRIPTION_EXPIRED,
+        eventParams,
+      );
     },
     [analytics, logEvent],
   );
 
   const trackSearchSubmitted = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.SEARCH_SUBMITTED, eventParams);
     },
     [analytics, logEvent],
   );
 
   const trackSearchResultClicked = useCallback(
-    async (eventParams) => {
-      await logEvent(analytics, FirebaseEvents.SEARCH_RESULT_CLICKED, eventParams);
+    async eventParams => {
+      await logEvent(
+        analytics,
+        FirebaseEvents.SEARCH_RESULT_CLICKED,
+        eventParams,
+      );
     },
     [analytics, logEvent],
   );
 
   const trackSearchResultViewed = useCallback(
-    async (eventParams) => {
-      await logEvent(analytics, FirebaseEvents.SEARCH_RESULT_VIEWED, eventParams);
+    async eventParams => {
+      await logEvent(
+        analytics,
+        FirebaseEvents.SEARCH_RESULT_VIEWED,
+        eventParams,
+      );
     },
     [analytics, logEvent],
   );
 
   const trackProfileViewed = useCallback(
-    async (eventParams) => {
+    async eventParams => {
       await logEvent(analytics, FirebaseEvents.PROFILE_VIEWED, eventParams);
     },
     [analytics, logEvent],
@@ -172,7 +187,7 @@ const useFirebaseAnalytics = firebaseAnalytics => {
   return {
     trackScreenView,
     // trackEvent,
-    trackSignUpClicked,
+    trackSignUpSubmitted,
     trackSignUpSuccess,
     trackSignUpFailed,
     trackLoginSuccess,
