@@ -20,6 +20,8 @@ import { FieldValue, Filter, GeoPoint } from '@react-native-firebase/firestore';
 import * as utils from './utils';
 export { utils };
 
+import useFirebaseAnalytics from './analytics/providers/firebase/useFirebaseAnalytics';
+
 // let env = process.env.NODE_ENV;
 // if (env === 'production') env = '(default)';
 // if (env === 'production') {
@@ -34,6 +36,7 @@ const cache = new Map();
 
 export const DayworkerContext = React.createContext({
   user: undefined,
+  analytics: {},
   setUser: async user => null,
   constants: undefined,
 
@@ -42,12 +45,12 @@ export const DayworkerContext = React.createContext({
   auth: undefined, //auth,
 
   signOut: async () => null,
-  signInWithPhoneNumber: async (phoneNumber: string) => null,
+  signInWithPhoneNumber: async phoneNumber => null,
   signInWithEmailAndPassword: async (email, password) => null,
   signUp: async (email, password, input, userType, lang) => null,
   sendUpdatePasswordEmail: async email => null,
   updateProfile: async data => null,
-  getUserProfileById: async (userId: string): any => null,
+  getUserProfileById: async userId => null,
   getConstants: async docs => null,
   getAuthenticatedUserProfile: async () => null,
   getJobsInArea: async (area, onComplete) => null,
@@ -60,26 +63,24 @@ export const DayworkerContext = React.createContext({
   uploadResume: async (uid, base64, callbacks) => url,
   deleteResume: async uid => null,
   deleteAccount: async () => null,
-  sendForgotPasswordEmail: async (email: string) => null,
-  verifyPhoneNumber: async (phone: string) => null,
-  updatePhoneNumber: async (verificationId: string, code: string) => null,
-  linkPhoneNumber: async (verificationId: string, code: string) => null,
-  updateUserAuthEmail: async (email: string) => null,
-  reauthenticateUserWithEmailAndPassword: (email: string, password: string) =>
-    null,
-  reauthenticateUserWithPhoneNumber: async (
-    verificationId: string,
-    code: string,
-  ) => null,
+  sendForgotPasswordEmail: async email => null,
+  verifyPhoneNumber: async phone => null,
+  updatePhoneNumber: async (verificationId, code) => null,
+  linkPhoneNumber: async (verificationId, code) => null,
+  updateUserAuthEmail: async email => null,
+  reauthenticateUserWithEmailAndPassword: (email, password) => null,
+  reauthenticateUserWithPhoneNumber: async (verificationId, code) => null,
 });
 
 export const useDayworker = () => useContext(DayworkerContext);
 
 export const DayworkerProvider = ({
   children,
+  firebase,
   firebase: {
     app,
-    auth,
+    // auth,
+    analytics,
     storage,
     store,
     defaultStore,
@@ -93,11 +94,26 @@ export const DayworkerProvider = ({
   //   const app = !firebase.app.getApps().length
   //     ? firebase.app.initializeApp(firebaseConfig)
   //     : firebase.app.getApps()[0];
-  //   const auth = firebase.auth.getAuth(app);
+
+  const {
+    createUserWithEmailAndPassword,
+    deleteUser,
+    getAuth,
+    onAuthStateChanged,
+    sendPasswordResetEmail,
+    signInWithEmailAndPassword,
+    signInWithPhoneNumber,
+    signOut,
+    verifyPhoneNumber,
+    reauthenticateWithCredential,
+  } = firebase.auth;
+  const auth = getAuth(app);
 
   //   const db = store.getFirestore(app, env);
   //   const defaultDB =
   //     env != '(default)' ? store.getFirestore(app, '(default)') : db;
+
+  const firebaseAnalytics = useFirebaseAnalytics(analytics);
 
   const API = useMemo(
     () => ({
@@ -107,33 +123,36 @@ export const DayworkerProvider = ({
 
       firebaseApp: app,
       auth: auth,
+      analytics: firebaseAnalytics,
 
       signInWithEmailAndPassword: async (email, password) => {
-        return await auth.signInWithEmailAndPassword(
-          email.toLowerCase().trim(),
-          password.trim(),
-        );
+        return new Promise(async (resolve, reject) => {
+          await signInWithEmailAndPassword(
+            auth,
+            email.toLowerCase().trim(),
+            password.trim(),
+          )
+            .then(res => resolve(res))
+            .catch(error => reject(error));
+        });
       },
       signInWithPhoneNumber: async phoneNumber => {
         return new Promise(async (resolve, reject) => {
-          await auth
-            .signInWithPhoneNumber(phoneNumber.trim())
+          await signInWithPhoneNumber(auth, phoneNumber.trim())
             .then(confirmation => resolve(confirmation))
             .catch(error => reject(error));
         });
       },
       verifyPhoneNumber: async phoneNumber => {
         return new Promise(async (resolve, reject) => {
-          await auth
-            .verifyPhoneNumber(phoneNumber.trim())
+          await verifyPhoneNumber(auth, phoneNumber.trim())
             .then(confirmation => resolve(confirmation))
             .catch(error => reject(error));
         });
       },
       verifyEmailAddress: async () => {
         return new Promise(async (resolve, reject) => {
-          await auth.currentUser
-            ?.sendEmailVerification()
+          await sendEmailVerification(auth.currentUser)
             .then(confirmation => resolve(confirmation))
             .catch(error => reject(error));
         });
@@ -190,8 +209,7 @@ export const DayworkerProvider = ({
             verificationId,
             code.trim(),
           );
-          await auth.currentUser
-            ?.reauthenticateWithCredential(credential)
+          await reauthenticateWithCredential(auth.currentUser, credential)
             .then(() => resolve())
             .catch(error => reject(error));
         });
@@ -202,8 +220,7 @@ export const DayworkerProvider = ({
             email.trim() || auth.currentUser?.email,
             password,
           );
-          await auth.currentUser
-            ?.reauthenticateWithCredential(credential)
+          await reauthenticateWithCredential(auth.currentUser, credential)
             .then(() => resolve())
             .catch(error => reject(error));
         });
@@ -235,12 +252,11 @@ export const DayworkerProvider = ({
                 }, */
           handleCodeInApp: true,
         };
-        return auth.sendPasswordResetEmail(emailClean, actionCodeSettings);
+        return sendPasswordResetEmail(auth, emailClean, actionCodeSettings);
       },
       updateUserAuthEmail: async newEmail => {
         return new Promise(async (resolve, reject) => {
-          await auth.currentUser
-            ?.updateEmail(newEmail)
+          await updateEmail(auth.currentUser, newEmail)
             .then(async () => {
               await auth.currentUser?.reload();
               setUser(() => auth.currentUser);
@@ -249,7 +265,7 @@ export const DayworkerProvider = ({
             .catch(error => reject(error));
         });
       },
-      signOut: async () => await auth.signOut(),
+      signOut: async () => await signOut(auth),
       signUp: async (email, password, input, userType, lang) => {
         email = email.trim().toLowerCase();
         password = password.trim();
@@ -290,7 +306,8 @@ export const DayworkerProvider = ({
           // Register User
           let user;
           try {
-            user = await auth.createUserWithEmailAndPassword(
+            user = await createUserWithEmailAndPassword(
+              auth,
               email.trim().toLowerCase(),
               password.trim(),
             );
@@ -395,7 +412,7 @@ export const DayworkerProvider = ({
         });
       },
       getConstants: async (
-        docs: Array<string> = [
+        docs = [
           'badges',
           'bizFocus',
           'regions',
@@ -429,7 +446,7 @@ export const DayworkerProvider = ({
       },
       /**
        * Return the authenticated user's profile.
-       * @param {Type} noCache - When set to true, will skip using the cache and fetch directly from firebase.
+       * @param noCache - When set to true, will skip using the cache and fetch directly from firebase.
        */
       getAuthenticatedUserProfile: async (noCache = false) => {
         if (!user) {
@@ -477,13 +494,7 @@ export const DayworkerProvider = ({
           : [center._latitude, center._longitude];
         radiusInM = radiusInM || 50 * 1000;
 
-        const constraints = [
-          // Filter by test accounts for Apple and Google Play review
-          Filter('email', 'not-in', [
-            'test.worker@dayworker.co',
-            'test.contractor@dayworker.co',
-          ]),
-        ];
+        const constraints = [];
 
         queryParams.delete('geoPoint');
         queryParams.delete('zoom');
@@ -568,24 +579,32 @@ export const DayworkerProvider = ({
           if (snap.size) {
             for (const d of snap.docs) {
               const profile = d.data();
-              // console.log('profile: ', JSON.stringify(profile, null, 2));
-              // If postConstraints exist, check against
-              // if ( postConstraints.length && !shouldInclude(profile) ) continue;
-              // if ( filter && !filter(profile) ) continue;
-              // We have to filter out a few false positives due to GeoHash
-              // accuracy, but most will match
-              // const lat = profile.geoPoint._lat;
-              // const lng = profile.geoPoint._long;
 
-              const lat = profile.geoPoint.latitude;
-              const lng = profile.geoPoint.longitude;
-              const distanceInKm = geofire.distanceBetween(
-                [lat, lng],
-                centerArray,
-              );
-              const distanceInM = distanceInKm * 1000;
-              if (distanceInM <= radiusInM) {
-                matchingDocs.push(profile);
+              const testAccountEmails = [
+                'test.worker@dayworker.co',
+                'test.contractor@dayworker.co',
+              ];
+              if (!testAccountEmails.includes(profile.email)) {
+                // console.log('profile: ', JSON.stringify(profile, null, 2));
+                // If postConstraints exist, check against
+                // if ( postConstraints.length && !shouldInclude(profile) ) continue;
+                // if ( filter && !filter(profile) ) continue;
+                // We have to filter out a few false positives due to GeoHash
+                // accuracy, but most will match
+                // const lat = profile.geoPoint._lat;
+                // const lng = profile.geoPoint._long;
+
+                const lat = profile.geoPoint.latitude;
+                const lng = profile.geoPoint.longitude;
+                const distanceInKm = geofire.distanceBetween(
+                  [lat, lng],
+                  centerArray,
+                );
+                const distanceInM = distanceInKm * 1000;
+
+                if (distanceInM <= radiusInM) {
+                  matchingDocs.push(profile);
+                }
               }
             }
           }
@@ -797,7 +816,8 @@ export const DayworkerProvider = ({
             return profileRef
               .delete()
               .then(() => {
-                return auth.currentUser?.delete?.();
+                return deleteUser(auth.currentUser);
+                // return auth.currentUser?.delete?.();
               })
               .then(() => {
                 return resolve(true);
@@ -810,8 +830,8 @@ export const DayworkerProvider = ({
           }
         });
       },
-      sendForgotPasswordEmail: async (email: string) => {
-        return await auth.sendPasswordResetEmail(email);
+      sendForgotPasswordEmail: async email => {
+        return await sendPasswordResetEmail(auth, email);
       },
     }),
     [
@@ -820,14 +840,23 @@ export const DayworkerProvider = ({
       app,
       auth,
       constants,
+      createUserWithEmailAndPassword,
       defaultStore,
+      deleteUser,
+      firebaseAnalytics,
+      reauthenticateWithCredential,
+      sendPasswordResetEmail,
+      signInWithEmailAndPassword,
+      signInWithPhoneNumber,
+      signOut,
       storage,
       store,
       user,
+      verifyPhoneNumber,
     ],
   );
   useEffect(() => {
-    const subscriber = auth.onAuthStateChanged(u => {
+    const subscriber = onAuthStateChanged(auth, u => {
       // console.log('Auth State Changed: ', JSON.stringify(u || {}, null, 2));
       setUser(() => u);
       if (!u) {
@@ -846,7 +875,7 @@ export const DayworkerProvider = ({
       'termsVersion',
     ]).then(c => setConstants(() => c));
     return subscriber; // unsubscribe on unmount
-  }, [API, auth]);
+  }, [API, auth, onAuthStateChanged]);
   // return React.createElement(DayworkerContext.Provider, {value: API}, [...children]);
   return (
     <DayworkerContext.Provider value={API}>
