@@ -78,20 +78,13 @@ export const useDayworker = () => useContext(DayworkerContext);
 export const DayworkerProvider = ({
   children,
   firebase,
-  firebase: {
+}) => {
+  const {
     app,
-    // auth,
     analytics,
     storage,
     store,
-  },
-}) => {
-  const [user, setUser] = useState(undefined);
-  const [constants, setConstants] = useState(undefined);
-
-  //   const app = !firebase.app.getApps().length
-  //     ? firebase.app.initializeApp(firebaseConfig)
-  //     : firebase.app.getApps()[0];
+  } = firebase;
 
   const {
     createUserWithEmailAndPassword,
@@ -109,18 +102,25 @@ export const DayworkerProvider = ({
   } = firebase.auth;
   const auth = getAuth(app);
 
-  //   const db = store.getFirestore(app, env);
-  //   const defaultDB =
-  //     env != '(default)' ? store.getFirestore(app, '(default)') : db;
-
-  // const firebaseAnalytics = useFirebaseAnalytics(analytics);
-
   const firebaseAnalytics = useMemo(() => {
     const fbAnalytics = new FirebaseAnalyticsService(analytics);
     // Singleton trick. Remove constructor to prevent object creating.
     fbAnalytics.constructor = null;
     return fbAnalytics;
   }, [analytics]);
+
+  const [user, setUser] = useState(undefined);
+  const [constants, setConstants] = useState(undefined);
+
+  //   const app = !firebase.app.getApps().length
+  //     ? firebase.app.initializeApp(firebaseConfig)
+  //     : firebase.app.getApps()[0];
+
+  //   const db = store.getFirestore(app, env);
+  //   const defaultDB =
+  //     env != '(default)' ? store.getFirestore(app, '(default)') : db;
+
+  // const firebaseAnalytics = useFirebaseAnalytics(analytics);
 
   const API = useMemo(
     () => ({
