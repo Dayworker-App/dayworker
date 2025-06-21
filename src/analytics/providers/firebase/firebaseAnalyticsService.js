@@ -218,6 +218,34 @@ class FirebaseAnalyticsService {
   }
 
   /**
+   * @method trackSearchExpanded
+   * @description This method logs a search filter list is expanded/opened.
+   * @param eventParams - attributes to send to firebase analytics.
+   * @returns  Promise<void>
+   */
+  async trackSearchExpanded(eventParams) {
+    await this.firebaseAnalytics.logEvent(
+      analytics,
+      FirebaseEvents.SEARCH_EXPANDED,
+      eventParams,
+    );
+  }
+
+  /**
+   * @method trackSearchCollapsed
+   * @description This method logs a search filter list is collapsed/closed.
+   * @param eventParams - attributes to send to firebase analytics.
+   * @returns  Promise<void>
+   */
+  async trackSearchCollapsed(eventParams) {
+    await this.firebaseAnalytics.logEvent(
+      analytics,
+      FirebaseEvents.SEARCH_COLLAPSED,
+      eventParams,
+    );
+  }
+
+  /**
    * @method trackSearchSubmitted
    * @description This method logs a search submitted event.
    * @param eventParams - attributes to send to firebase analytics.

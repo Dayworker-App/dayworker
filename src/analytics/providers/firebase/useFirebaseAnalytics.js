@@ -128,6 +128,19 @@ const useFirebaseAnalytics = firebaseAnalytics => {
     },
     [analytics, logEvent],
   );
+  const trackSearchExpanded = useCallback(
+    async eventParams => {
+      await logEvent(analytics, FirebaseEvents.SEARCH_EXPANDED, eventParams);
+    },
+    [analytics, logEvent],
+  );
+
+  const trackSearchCollapsed = useCallback(
+    async eventParams => {
+      await logEvent(analytics, FirebaseEvents.SEARCH_COLLAPSED, eventParams);
+    },
+    [analytics, logEvent],
+  );
 
   const trackSearchSubmitted = useCallback(
     async eventParams => {
@@ -201,6 +214,8 @@ const useFirebaseAnalytics = firebaseAnalytics => {
     trackSubscribeSuccess,
     trackSubscribeFailed,
     trackSubscriptionExpired,
+    trackSearchExpanded,
+    trackSearchCollapsed,
     trackSearchSubmitted,
     trackSearchResultClicked,
     trackSearchResultViewed,
