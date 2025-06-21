@@ -287,13 +287,13 @@ var useFirebaseAnalytics = function useFirebaseAnalytics(firebaseAnalytics) {
       return _ref13.apply(this, arguments);
     };
   }(), [analytics, logEvent]);
-  var trackSearchSubmitted = (0, _react.useCallback)(/*#__PURE__*/function () {
+  var trackSearchExpanded = (0, _react.useCallback)(/*#__PURE__*/function () {
     var _ref14 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee14(eventParams) {
       return _regeneratorRuntime().wrap(function _callee14$(_context14) {
         while (1) switch (_context14.prev = _context14.next) {
           case 0:
             _context14.next = 2;
-            return logEvent(analytics, _events["default"].SEARCH_SUBMITTED, eventParams);
+            return logEvent(analytics, _events["default"].SEARCH_EXPANDED, eventParams);
           case 2:
           case "end":
             return _context14.stop();
@@ -304,13 +304,13 @@ var useFirebaseAnalytics = function useFirebaseAnalytics(firebaseAnalytics) {
       return _ref14.apply(this, arguments);
     };
   }(), [analytics, logEvent]);
-  var trackSearchResultClicked = (0, _react.useCallback)(/*#__PURE__*/function () {
+  var trackSearchCollapsed = (0, _react.useCallback)(/*#__PURE__*/function () {
     var _ref15 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee15(eventParams) {
       return _regeneratorRuntime().wrap(function _callee15$(_context15) {
         while (1) switch (_context15.prev = _context15.next) {
           case 0:
             _context15.next = 2;
-            return logEvent(analytics, _events["default"].SEARCH_RESULT_CLICKED, eventParams);
+            return logEvent(analytics, _events["default"].SEARCH_COLLAPSED, eventParams);
           case 2:
           case "end":
             return _context15.stop();
@@ -321,13 +321,13 @@ var useFirebaseAnalytics = function useFirebaseAnalytics(firebaseAnalytics) {
       return _ref15.apply(this, arguments);
     };
   }(), [analytics, logEvent]);
-  var trackSearchResultViewed = (0, _react.useCallback)(/*#__PURE__*/function () {
+  var trackSearchSubmitted = (0, _react.useCallback)(/*#__PURE__*/function () {
     var _ref16 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee16(eventParams) {
       return _regeneratorRuntime().wrap(function _callee16$(_context16) {
         while (1) switch (_context16.prev = _context16.next) {
           case 0:
             _context16.next = 2;
-            return logEvent(analytics, _events["default"].SEARCH_RESULT_VIEWED, eventParams);
+            return logEvent(analytics, _events["default"].SEARCH_SUBMITTED, eventParams);
           case 2:
           case "end":
             return _context16.stop();
@@ -338,13 +338,13 @@ var useFirebaseAnalytics = function useFirebaseAnalytics(firebaseAnalytics) {
       return _ref16.apply(this, arguments);
     };
   }(), [analytics, logEvent]);
-  var trackProfileViewed = (0, _react.useCallback)(/*#__PURE__*/function () {
+  var trackSearchResultClicked = (0, _react.useCallback)(/*#__PURE__*/function () {
     var _ref17 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee17(eventParams) {
       return _regeneratorRuntime().wrap(function _callee17$(_context17) {
         while (1) switch (_context17.prev = _context17.next) {
           case 0:
             _context17.next = 2;
-            return logEvent(analytics, _events["default"].PROFILE_VIEWED, eventParams);
+            return logEvent(analytics, _events["default"].SEARCH_RESULT_CLICKED, eventParams);
           case 2:
           case "end":
             return _context17.stop();
@@ -355,15 +355,14 @@ var useFirebaseAnalytics = function useFirebaseAnalytics(firebaseAnalytics) {
       return _ref17.apply(this, arguments);
     };
   }(), [analytics, logEvent]);
-  var setAnalyticsUserId = (0, _react.useCallback)(/*#__PURE__*/function () {
-    var _ref18 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee18(userId /*: string*/) {
+  var trackSearchResultViewed = (0, _react.useCallback)(/*#__PURE__*/function () {
+    var _ref18 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee18(eventParams) {
       return _regeneratorRuntime().wrap(function _callee18$(_context18) {
         while (1) switch (_context18.prev = _context18.next) {
           case 0:
-            console.log('setAnalyticsUserId: ', userId);
-            _context18.next = 3;
-            return setUserId(analytics, userId);
-          case 3:
+            _context18.next = 2;
+            return logEvent(analytics, _events["default"].SEARCH_RESULT_VIEWED, eventParams);
+          case 2:
           case "end":
             return _context18.stop();
         }
@@ -372,16 +371,15 @@ var useFirebaseAnalytics = function useFirebaseAnalytics(firebaseAnalytics) {
     return function (_x18) {
       return _ref18.apply(this, arguments);
     };
-  }(), [analytics, setUserId]);
-  var setAnalyticsUserProperties = (0, _react.useCallback)(/*#__PURE__*/function () {
-    var _ref19 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee19(userProperties /*: any*/) {
+  }(), [analytics, logEvent]);
+  var trackProfileViewed = (0, _react.useCallback)(/*#__PURE__*/function () {
+    var _ref19 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee19(eventParams) {
       return _regeneratorRuntime().wrap(function _callee19$(_context19) {
         while (1) switch (_context19.prev = _context19.next) {
           case 0:
-            console.log('setAnalyticsUserProperties: ', JSON.stringify(userProperties || {}, null, 2));
-            _context19.next = 3;
-            return setUserProperties(analytics, userProperties);
-          case 3:
+            _context19.next = 2;
+            return logEvent(analytics, _events["default"].PROFILE_VIEWED, eventParams);
+          case 2:
           case "end":
             return _context19.stop();
         }
@@ -389,6 +387,42 @@ var useFirebaseAnalytics = function useFirebaseAnalytics(firebaseAnalytics) {
     }));
     return function (_x19) {
       return _ref19.apply(this, arguments);
+    };
+  }(), [analytics, logEvent]);
+  var setAnalyticsUserId = (0, _react.useCallback)(/*#__PURE__*/function () {
+    var _ref20 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee20(userId /*: string*/) {
+      return _regeneratorRuntime().wrap(function _callee20$(_context20) {
+        while (1) switch (_context20.prev = _context20.next) {
+          case 0:
+            console.log('setAnalyticsUserId: ', userId);
+            _context20.next = 3;
+            return setUserId(analytics, userId);
+          case 3:
+          case "end":
+            return _context20.stop();
+        }
+      }, _callee20);
+    }));
+    return function (_x20) {
+      return _ref20.apply(this, arguments);
+    };
+  }(), [analytics, setUserId]);
+  var setAnalyticsUserProperties = (0, _react.useCallback)(/*#__PURE__*/function () {
+    var _ref21 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee21(userProperties /*: any*/) {
+      return _regeneratorRuntime().wrap(function _callee21$(_context21) {
+        while (1) switch (_context21.prev = _context21.next) {
+          case 0:
+            console.log('setAnalyticsUserProperties: ', JSON.stringify(userProperties || {}, null, 2));
+            _context21.next = 3;
+            return setUserProperties(analytics, userProperties);
+          case 3:
+          case "end":
+            return _context21.stop();
+        }
+      }, _callee21);
+    }));
+    return function (_x21) {
+      return _ref21.apply(this, arguments);
     };
   }(), [analytics, setUserProperties]);
   return {
@@ -408,6 +442,8 @@ var useFirebaseAnalytics = function useFirebaseAnalytics(firebaseAnalytics) {
     trackSubscribeSuccess: trackSubscribeSuccess,
     trackSubscribeFailed: trackSubscribeFailed,
     trackSubscriptionExpired: trackSubscriptionExpired,
+    trackSearchExpanded: trackSearchExpanded,
+    trackSearchCollapsed: trackSearchCollapsed,
     trackSearchSubmitted: trackSearchSubmitted,
     trackSearchResultClicked: trackSearchResultClicked,
     trackSearchResultViewed: trackSearchResultViewed,

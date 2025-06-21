@@ -15,15 +15,18 @@ var FirebaseEvents = {
   APP_BACKGROUNDED: 'app_backgrounded',
   CHAT_MESSAGE_CREATED: 'chat_message_created',
   CHAT_MESSAGE_SENT: 'chat_message_sent',
+  SEARCH_EXPANDED: 'search_expanded',
+  SEARCH_COLLAPSED: 'search_collapsed',
+  SEARCH_SUBMITTED: 'search_submitted',
+  SEARCH_RESULT_CLICKED: 'search_result_clicked',
+  SEARCH_RESULT_VIEWED: 'search_result_viewed',
+  PROFILE_VIEWED: 'profile_viewed',
+  // TODO: Add when subscription feature is implemented
   SUBSCRIBE_CLICKED: 'subscribe_clicked',
   SUBSCRIBE_SUCCESS: 'subscribe_success',
   SUBSCRIBE_FAILED: 'subscribe_failed',
   SUBSCRIBE_ABANDONED: 'subscribe_abandoned',
   SUBSCRIPTION_EXPIRED: 'subscription_expired',
-  SUBSCRIPTION_CANCELLED: 'subscription_cancelled',
-  SEARCH_SUBMITTED: 'search_submitted',
-  SEARCH_RESULT_CLICKED: 'search_result_clicked',
-  SEARCH_RESULT_VIEWED: 'search_result_viewed',
-  PROFILE_VIEWED: 'profile_viewed'
+  SUBSCRIPTION_CANCELLED: 'subscription_cancelled'
 };
 var _default = exports["default"] = FirebaseEvents;

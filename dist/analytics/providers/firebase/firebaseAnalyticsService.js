@@ -430,6 +430,60 @@ var FirebaseAnalyticsService = /*#__PURE__*/function () {
       return trackSubscriptionExpired;
     }()
     /**
+     * @method trackSearchExpanded
+     * @description This method logs a search filter list is expanded/opened.
+     * @param eventParams - attributes to send to firebase analytics.
+     * @returns  Promise<void>
+     */
+    )
+  }, {
+    key: "trackSearchExpanded",
+    value: (function () {
+      var _trackSearchExpanded = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee14(eventParams) {
+        return _regeneratorRuntime().wrap(function _callee14$(_context14) {
+          while (1) switch (_context14.prev = _context14.next) {
+            case 0:
+              _context14.next = 2;
+              return this.firebaseAnalytics.logEvent(analytics, _events["default"].SEARCH_EXPANDED, eventParams);
+            case 2:
+            case "end":
+              return _context14.stop();
+          }
+        }, _callee14, this);
+      }));
+      function trackSearchExpanded(_x14) {
+        return _trackSearchExpanded.apply(this, arguments);
+      }
+      return trackSearchExpanded;
+    }()
+    /**
+     * @method trackSearchCollapsed
+     * @description This method logs a search filter list is collapsed/closed.
+     * @param eventParams - attributes to send to firebase analytics.
+     * @returns  Promise<void>
+     */
+    )
+  }, {
+    key: "trackSearchCollapsed",
+    value: (function () {
+      var _trackSearchCollapsed = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee15(eventParams) {
+        return _regeneratorRuntime().wrap(function _callee15$(_context15) {
+          while (1) switch (_context15.prev = _context15.next) {
+            case 0:
+              _context15.next = 2;
+              return this.firebaseAnalytics.logEvent(analytics, _events["default"].SEARCH_COLLAPSED, eventParams);
+            case 2:
+            case "end":
+              return _context15.stop();
+          }
+        }, _callee15, this);
+      }));
+      function trackSearchCollapsed(_x15) {
+        return _trackSearchCollapsed.apply(this, arguments);
+      }
+      return trackSearchCollapsed;
+    }()
+    /**
      * @method trackSearchSubmitted
      * @description This method logs a search submitted event.
      * @param eventParams - attributes to send to firebase analytics.
@@ -439,19 +493,19 @@ var FirebaseAnalyticsService = /*#__PURE__*/function () {
   }, {
     key: "trackSearchSubmitted",
     value: (function () {
-      var _trackSearchSubmitted = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee14(eventParams) {
-        return _regeneratorRuntime().wrap(function _callee14$(_context14) {
-          while (1) switch (_context14.prev = _context14.next) {
+      var _trackSearchSubmitted = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee16(eventParams) {
+        return _regeneratorRuntime().wrap(function _callee16$(_context16) {
+          while (1) switch (_context16.prev = _context16.next) {
             case 0:
-              _context14.next = 2;
+              _context16.next = 2;
               return this.firebaseAnalytics.logEvent(analytics, _events["default"].SEARCH_SUBMITTED, eventParams);
             case 2:
             case "end":
-              return _context14.stop();
+              return _context16.stop();
           }
-        }, _callee14, this);
+        }, _callee16, this);
       }));
-      function trackSearchSubmitted(_x14) {
+      function trackSearchSubmitted(_x16) {
         return _trackSearchSubmitted.apply(this, arguments);
       }
       return trackSearchSubmitted;
@@ -466,19 +520,19 @@ var FirebaseAnalyticsService = /*#__PURE__*/function () {
   }, {
     key: "trackSearchResultClicked",
     value: (function () {
-      var _trackSearchResultClicked = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee15(eventParams) {
-        return _regeneratorRuntime().wrap(function _callee15$(_context15) {
-          while (1) switch (_context15.prev = _context15.next) {
+      var _trackSearchResultClicked = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee17(eventParams) {
+        return _regeneratorRuntime().wrap(function _callee17$(_context17) {
+          while (1) switch (_context17.prev = _context17.next) {
             case 0:
-              _context15.next = 2;
+              _context17.next = 2;
               return this.firebaseAnalytics.logEvent(analytics, _events["default"].SEARCH_RESULT_CLICKED, eventParams);
             case 2:
             case "end":
-              return _context15.stop();
+              return _context17.stop();
           }
-        }, _callee15, this);
+        }, _callee17, this);
       }));
-      function trackSearchResultClicked(_x15) {
+      function trackSearchResultClicked(_x17) {
         return _trackSearchResultClicked.apply(this, arguments);
       }
       return trackSearchResultClicked;
@@ -493,19 +547,19 @@ var FirebaseAnalyticsService = /*#__PURE__*/function () {
   }, {
     key: "trackSearchResultViewed",
     value: (function () {
-      var _trackSearchResultViewed = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee16(eventParams) {
-        return _regeneratorRuntime().wrap(function _callee16$(_context16) {
-          while (1) switch (_context16.prev = _context16.next) {
+      var _trackSearchResultViewed = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee18(eventParams) {
+        return _regeneratorRuntime().wrap(function _callee18$(_context18) {
+          while (1) switch (_context18.prev = _context18.next) {
             case 0:
-              _context16.next = 2;
+              _context18.next = 2;
               return this.firebaseAnalytics.logEvent(analytics, _events["default"].SEARCH_RESULT_VIEWED, eventParams);
             case 2:
             case "end":
-              return _context16.stop();
+              return _context18.stop();
           }
-        }, _callee16, this);
+        }, _callee18, this);
       }));
-      function trackSearchResultViewed(_x16) {
+      function trackSearchResultViewed(_x18) {
         return _trackSearchResultViewed.apply(this, arguments);
       }
       return trackSearchResultViewed;
@@ -520,19 +574,19 @@ var FirebaseAnalyticsService = /*#__PURE__*/function () {
   }, {
     key: "trackProfileViewed",
     value: (function () {
-      var _trackProfileViewed = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee17(eventParams) {
-        return _regeneratorRuntime().wrap(function _callee17$(_context17) {
-          while (1) switch (_context17.prev = _context17.next) {
+      var _trackProfileViewed = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee19(eventParams) {
+        return _regeneratorRuntime().wrap(function _callee19$(_context19) {
+          while (1) switch (_context19.prev = _context19.next) {
             case 0:
-              _context17.next = 2;
+              _context19.next = 2;
               return this.firebaseAnalytics.logEvent(analytics, _events["default"].PROFILE_VIEWED, eventParams);
             case 2:
             case "end":
-              return _context17.stop();
+              return _context19.stop();
           }
-        }, _callee17, this);
+        }, _callee19, this);
       }));
-      function trackProfileViewed(_x17) {
+      function trackProfileViewed(_x19) {
         return _trackProfileViewed.apply(this, arguments);
       }
       return trackProfileViewed;
@@ -547,20 +601,20 @@ var FirebaseAnalyticsService = /*#__PURE__*/function () {
   }, {
     key: "setAnalyticsUserId",
     value: (function () {
-      var _setAnalyticsUserId = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee18(userId) {
-        return _regeneratorRuntime().wrap(function _callee18$(_context18) {
-          while (1) switch (_context18.prev = _context18.next) {
+      var _setAnalyticsUserId = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee20(userId) {
+        return _regeneratorRuntime().wrap(function _callee20$(_context20) {
+          while (1) switch (_context20.prev = _context20.next) {
             case 0:
               console.log('setAnalyticsUserId: ', userId);
-              _context18.next = 3;
+              _context20.next = 3;
               return setUserId(analytics, userId);
             case 3:
             case "end":
-              return _context18.stop();
+              return _context20.stop();
           }
-        }, _callee18);
+        }, _callee20);
       }));
-      function setAnalyticsUserId(_x18) {
+      function setAnalyticsUserId(_x20) {
         return _setAnalyticsUserId.apply(this, arguments);
       }
       return setAnalyticsUserId;
@@ -575,20 +629,20 @@ var FirebaseAnalyticsService = /*#__PURE__*/function () {
   }, {
     key: "setAnalyticsUserProperties",
     value: (function () {
-      var _setAnalyticsUserProperties = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee19(userProperties) {
-        return _regeneratorRuntime().wrap(function _callee19$(_context19) {
-          while (1) switch (_context19.prev = _context19.next) {
+      var _setAnalyticsUserProperties = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee21(userProperties) {
+        return _regeneratorRuntime().wrap(function _callee21$(_context21) {
+          while (1) switch (_context21.prev = _context21.next) {
             case 0:
               console.log('setAnalyticsUserProperties: ', JSON.stringify(userProperties || {}, null, 2));
-              _context19.next = 3;
+              _context21.next = 3;
               return setUserProperties(analytics, userProperties);
             case 3:
             case "end":
-              return _context19.stop();
+              return _context21.stop();
           }
-        }, _callee19);
+        }, _callee21);
       }));
-      function setAnalyticsUserProperties(_x19) {
+      function setAnalyticsUserProperties(_x21) {
         return _setAnalyticsUserProperties.apply(this, arguments);
       }
       return setAnalyticsUserProperties;
