@@ -10,6 +10,7 @@ var FirebaseEvents = {
   SIGN_UP_FAILED: 'sign_up_failed',
   LOG_IN_SUCCESS: 'log_in_success',
   LOG_OUT_SUCCESS: 'log_out_success',
+  ACCOUNT_DELETED: 'account_deleted',
   APP_OPENED: 'app_opened',
   APP_FOREGROUNDED: 'app_foregrounded',
   APP_BACKGROUNDED: 'app_backgrounded',

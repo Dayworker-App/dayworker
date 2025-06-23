@@ -58,6 +58,14 @@ const useFirebaseAnalytics = firebaseAnalytics => {
     [analytics, logEvent],
   );
 
+  const trackAccountDeleted = async eventParams => {
+    await this.firebaseAnalytics.logEvent(
+      analytics,
+      FirebaseEvents.ACCOUNT_DELETED,
+      eventParams,
+    );
+  };
+
   const trackAppLaunched = useCallback(
     async eventParams => {
       await logEvent(analytics, FirebaseEvents.APP_LAUNCHED, eventParams);
@@ -205,6 +213,7 @@ const useFirebaseAnalytics = firebaseAnalytics => {
     trackSignUpFailed,
     trackLoginSuccess,
     trackLogoutSuccess,
+    trackAccountDeleted,
     trackAppLaunched,
     trackAppForegrounded,
     trackAppBackgrounded,

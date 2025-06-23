@@ -516,25 +516,11 @@ var useDayworker = exports.useDayworker = function useDayworker() {
 };
 var DayworkerProvider = exports.DayworkerProvider = function DayworkerProvider(_ref) {
   var children = _ref.children,
-    firebase = _ref.firebase,
-    _ref$firebase = _ref.firebase,
-    app = _ref$firebase.app,
-    analytics = _ref$firebase.analytics,
-    storage = _ref$firebase.storage,
-    store = _ref$firebase.store;
-  var _useState = (0, _react.useState)(undefined),
-    _useState2 = _slicedToArray(_useState, 2),
-    user = _useState2[0],
-    setUser = _useState2[1];
-  var _useState3 = (0, _react.useState)(undefined),
-    _useState4 = _slicedToArray(_useState3, 2),
-    constants = _useState4[0],
-    setConstants = _useState4[1];
-
-  //   const app = !firebase.app.getApps().length
-  //     ? firebase.app.initializeApp(firebaseConfig)
-  //     : firebase.app.getApps()[0];
-
+    firebase = _ref.firebase;
+  var app = firebase.app,
+    analytics = firebase.analytics,
+    storage = firebase.storage,
+    store = firebase.store;
   var _firebase$auth = firebase.auth,
     createUserWithEmailAndPassword = _firebase$auth.createUserWithEmailAndPassword,
     deleteUser = _firebase$auth.deleteUser,
@@ -549,6 +535,24 @@ var DayworkerProvider = exports.DayworkerProvider = function DayworkerProvider(_
     PhoneAuthProvider = _firebase$auth.PhoneAuthProvider,
     EmailAuthProvider = _firebase$auth.EmailAuthProvider;
   var auth = getAuth(app);
+  var firebaseAnalytics = (0, _react.useMemo)(function () {
+    var fbAnalytics = new _firebaseAnalyticsService["default"](analytics);
+    // Singleton trick. Remove constructor to prevent object creating.
+    fbAnalytics.constructor = null;
+    return fbAnalytics;
+  }, [analytics]);
+  var _useState = (0, _react.useState)(undefined),
+    _useState2 = _slicedToArray(_useState, 2),
+    user = _useState2[0],
+    setUser = _useState2[1];
+  var _useState3 = (0, _react.useState)(undefined),
+    _useState4 = _slicedToArray(_useState3, 2),
+    constants = _useState4[0],
+    setConstants = _useState4[1];
+
+  //   const app = !firebase.app.getApps().length
+  //     ? firebase.app.initializeApp(firebaseConfig)
+  //     : firebase.app.getApps()[0];
 
   //   const db = store.getFirestore(app, env);
   //   const defaultDB =
@@ -556,12 +560,6 @@ var DayworkerProvider = exports.DayworkerProvider = function DayworkerProvider(_
 
   // const firebaseAnalytics = useFirebaseAnalytics(analytics);
 
-  var firebaseAnalytics = (0, _react.useMemo)(function () {
-    var fbAnalytics = new _firebaseAnalyticsService["default"](analytics);
-    // Singleton trick. Remove constructor to prevent object creating.
-    fbAnalytics.constructor = null;
-    return fbAnalytics;
-  }, [analytics]);
   var API = (0, _react.useMemo)(function () {
     return {
       user: user,

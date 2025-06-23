@@ -1,5 +1,3 @@
-// interface for Analytics Service => needs typescript
-
 // type SignupSuccessAttributes = {
 //   // sign up fields
 // };
@@ -55,6 +53,7 @@
 //   trackSignUpFailed?: (attributes: SignupFailedAttributes) => void;
 //   trackLoginSuccess?: (attributes: LoginSuccessAttributes) => void;
 //   trackLogoutSuccess?: () => void;
+//	 trackAccountDeleted?: () => void;
 //   trackAppOpened?: () => void;
 //   trackAppBackgrounded?: () => void;
 //   trackAppForegrounded?: () => void;

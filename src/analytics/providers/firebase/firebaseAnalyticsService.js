@@ -92,6 +92,20 @@ class FirebaseAnalyticsService {
   }
 
   /**
+   * @method trackAccountDeleted
+   * @description This method logs an account deleted event.
+   * @param eventParams - attributes to send to firebase analytics.
+   * @returns  Promise<void>
+   */
+  async trackAccountDeleted(eventParams) {
+    await this.firebaseAnalytics.logEvent(
+      analytics,
+      FirebaseEvents.ACCOUNT_DELETED,
+      eventParams,
+    );
+  }
+
+  /**
    * @method trackAppLaunched
    * @description This method logs an app launched event (cold start).
    * @param eventParams - attributes to send to firebase analytics.
