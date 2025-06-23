@@ -15,7 +15,7 @@ const DayworkerProvider = ({children}) => {
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 
 import * as geofire from 'geofire-common';
-import { FieldValue, Filter, GeoPoint } from '@react-native-firebase/firestore';
+// import { FieldValue, Filter, GeoPoint } from '@react-native-firebase/firestore';
 
 import * as utils from './utils';
 export { utils };
@@ -78,14 +78,15 @@ export const useDayworker = () => useContext(DayworkerContext);
 export const DayworkerProvider = ({
   children,
   firebase,
-}) => {
-  const {
+  firebase: {
     app,
+    // auth,
     analytics,
     storage,
-    store,
-  } = firebase;
-
+    // store,
+  },
+}) => {
+  // START FIREBASE SETUP
   const {
     createUserWithEmailAndPassword,
     deleteUser,
@@ -100,7 +101,28 @@ export const DayworkerProvider = ({
     PhoneAuthProvider,
     EmailAuthProvider,
   } = firebase.auth;
-  const auth = getAuth(app);
+  const auth = getAuth(firebase.app);
+
+  const {
+    collection,
+    deleteDoc,
+    doc,
+    endAt,
+    FieldValue,
+    Filter,
+    GeoPoint,
+    getDoc,
+    getDocs,
+    getFirestore,
+    orderBy,
+    query,
+    setDoc,
+    startAt,
+    updateDoc,
+    where,
+  } = firebase.store;
+  // console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
+  const db = getFirestore(firebase.app, process.env.NODE_ENV);
 
   const firebaseAnalytics = useMemo(() => {
     const fbAnalytics = new FirebaseAnalyticsService(analytics);
@@ -108,6 +130,8 @@ export const DayworkerProvider = ({
     fbAnalytics.constructor = null;
     return fbAnalytics;
   }, [analytics]);
+
+  // END FIREBASE SETUP
 
   const [user, setUser] = useState(undefined);
   const [constants, setConstants] = useState(undefined);
@@ -228,7 +252,7 @@ export const DayworkerProvider = ({
             password,
           );
           await reauthenticateWithCredential(auth.currentUser, credential)
-            .then(() => resolve())
+            .then(res => resolve(res))
             .catch(error => reject(error));
         });
       },
@@ -263,7 +287,7 @@ export const DayworkerProvider = ({
       },
       updateUserAuthEmail: async newEmail => {
         return new Promise(async (resolve, reject) => {
-          await updateEmail(auth.currentUser, newEmail)
+          return await updateEmail(auth.currentUser, newEmail)
             .then(async () => {
               await auth.currentUser?.reload();
               setUser(() => auth.currentUser);
@@ -335,10 +359,9 @@ export const DayworkerProvider = ({
           const templateName = `join-${userType.toLowerCase()}`;
           const templateLang = lang.toUpperCase();
 
-          store
-            .collection('profiles')
-            .doc(UID)
-            .set(input)
+          const profileCollectionRef = collection(db, 'profiles');
+          const docRef = doc(profileCollectionRef, UID);
+          setDoc(docRef, input)
             .then(res => {
               // Send Welcome Email
               API.emailUser(email, `email--${templateName}--${templateLang}`, {
@@ -363,7 +386,7 @@ export const DayworkerProvider = ({
           if (!userId) {
             return reject('No userId provided');
           }
-          const profile = await store.collection('profiles').doc(userId).get();
+          const profile = await getDoc(collection(db, 'profiles', userId));
           if (!profile.exists) {
             return reject(`Profile ${userId} doesn't exist.`);
           }
@@ -374,15 +397,22 @@ export const DayworkerProvider = ({
       updateProfile: async data => {
         return new Promise(async (resolve, reject) => {
           const UID = auth.currentUser?.uid;
-          const profile = await store.collection('profiles').doc(UID).get();
+          console.log('updateProfile UID: ', UID);
+          const profileRef = doc(db, 'profiles', UID);
+          const profile = await getDoc(profileRef);
+          console.log('updateProfile profile: ', profile);
 
           if (!profile.exists) {
             return reject(`Profile ${UID} doesn't exist.`);
           }
 
           if (data.email) {
+            console.log('updateProfile data.email: ', data.email);
             try {
+              console.log('Updating user email: ', data.email);
+              // Update the auth email
               await API.updateUserAuthEmail(data.email);
+              console.log('Update user email COMPLETE ');
             } catch (e) {
               reject(e);
             }
@@ -400,11 +430,10 @@ export const DayworkerProvider = ({
             );
             data.region = `${location.city}, ${location.state}`;
           }
-          await store
-            .collection('profiles')
-            .doc(UID)
-            .update(data)
+
+          await updateDoc(profileRef, data)
             .then(() => {
+              console.log('Profile updated successfully');
               const currentProfile = cache.get('profile');
               const updatedProfile = {
                 ...currentProfile,
@@ -437,10 +466,9 @@ export const DayworkerProvider = ({
           return cache.get('constants');
         }
 
-        const querySnapshot = await store
-          .collection('constants')
-          .where('__name__', 'in', docs)
-          .get();
+        const constantsCollectionRef = collection(db, 'constants');
+        const q = query(constantsCollectionRef, where('__name__', 'in', docs));
+        const querySnapshot = await getDocs(q);
 
         const documents = [];
         querySnapshot.forEach(d => {
@@ -462,29 +490,24 @@ export const DayworkerProvider = ({
         if (!noCache && cache.has('profile')) {
           return cache.get('profile');
         }
-        return await store
-          .collection('profiles')
-          .doc(user.uid)
-          .get()
-          .then(documentSnapshot => {
-            // console.log('User exists: ', documentSnapshot.exists);
 
-            if (documentSnapshot.exists) {
-              // console.log('documentSnapshot.data(): ', documentSnapshot.data());
+        const docRef = doc(db, 'profiles', user.uid);
 
-              const userProfile = documentSnapshot.data();
-              cache.set('profile', userProfile);
-              return userProfile;
-            }
+        return await getDoc(docRef).then(documentSnapshot => {
+          if (documentSnapshot.exists) {
+            const userProfile = documentSnapshot.data();
+            cache.set('profile', userProfile);
+            return userProfile;
+          }
 
-            return;
-          });
+          return;
+        });
       },
       getJobsInArea: async (area, onComplete) => {
-        const querySnapshot = await store
-          .collection('Worker Requests')
-          .where('area', '==', area)
-          .get();
+        const workersCollectionRef = collection(db, 'Worker Requests');
+        const q = query(workersCollectionRef, where('area', '==', area));
+        const querySnapshot = await getDocs(q);
+
         const jobs = [];
         querySnapshot.forEach(d => {
           jobs.push(d.data());
@@ -565,19 +588,20 @@ export const DayworkerProvider = ({
         const promises = [];
         // console.log('bounds: ', bounds);
         for (const b of bounds) {
-          promises.push(
-            store
-              .collection('profiles')
-              .where(
-                constraints.length > 1
-                  ? Filter.and(...constraints)
-                  : constraints[0],
-              )
-              .orderBy('geohash')
-              .startAt(b[0])
-              .endAt(b[1])
-              .get(),
+          const profilesRef = collection(db, 'profiles'); //
+          const q = query(
+            profilesRef, //
+            where(
+              constraints.length > 1
+                ? Filter.and(...constraints) // Use 'and' for multiple constraints
+                : constraints[0], // If only one constraint, use it directly
+            ),
+            orderBy('geohash'), // Order by 'geohash'
+            startAt(b[0]), // Define the start point
+            endAt(b[1]), // Define the end point
           );
+
+          promises.push(getDocs(q));
         }
         const snapshots = await Promise.all(promises);
         const matchingDocs = [];
@@ -706,13 +730,10 @@ export const DayworkerProvider = ({
           data.currentUID = auth?.currentUser?.uid;
           data.timestamp = FieldValue.serverTimestamp(); // store.serverTimestamp(); // Timestamp.now(); // new Date().getTime();
 
-          const mailRef = store?.collection('mail');
-          const emailDoc = mailRef.doc().id;
-
-          store
-            .collection('mail')
-            .doc(emailDoc)
-            .set(data, { merge: true })
+          const mailRef = collection(db, 'mail');
+          const emailDoc = doc(mailRef).id;
+          const docRef = doc(mailRef, emailDoc);
+          setDoc(docRef, data)
             .then(() => {
               resolve('Email sent');
               console.log('Email sent');
@@ -819,9 +840,8 @@ export const DayworkerProvider = ({
           try {
             // We may want to delete more content. I.e. nudges, favorites, etc.
             const UID = auth.currentUser?.uid;
-            const profileRef = store.collection('profiles').doc(UID);
-            return profileRef
-              .delete()
+            const profileRef = collection(db, 'profiles', UID);
+            return deleteDoc(profileRef)
               .then(() => {
                 return deleteUser(auth.currentUser);
                 // return auth.currentUser?.delete?.();
@@ -843,22 +863,37 @@ export const DayworkerProvider = ({
     }),
     [
       EmailAuthProvider,
+      FieldValue,
+      Filter,
+      GeoPoint,
       PhoneAuthProvider,
       app,
       auth,
+      collection,
       constants,
       createUserWithEmailAndPassword,
-      store,
+      db,
+      deleteDoc,
       deleteUser,
+      doc,
+      endAt,
       firebaseAnalytics,
+      getDoc,
+      getDocs,
+      orderBy,
+      query,
       reauthenticateWithCredential,
       sendPasswordResetEmail,
+      setDoc,
       signInWithEmailAndPassword,
       signInWithPhoneNumber,
       signOut,
+      startAt,
       storage,
+      updateDoc,
       user,
       verifyPhoneNumber,
+      where,
     ],
   );
   useEffect(() => {
