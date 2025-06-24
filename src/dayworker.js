@@ -75,18 +75,9 @@ export const DayworkerContext = React.createContext({
 
 export const useDayworker = () => useContext(DayworkerContext);
 
-export const DayworkerProvider = ({
-  children,
-  firebase,
-  firebase: {
-    app,
-    // auth,
-    analytics,
-    storage,
-    // store,
-  },
-}) => {
+export const DayworkerProvider = ({ children, firebase }) => {
   // START FIREBASE SETUP
+  const { app } = firebase;
   const {
     createUserWithEmailAndPassword,
     deleteUser,
@@ -101,10 +92,9 @@ export const DayworkerProvider = ({
     PhoneAuthProvider,
     EmailAuthProvider,
   } = firebase.auth;
-  const auth = getAuth(firebase.app);
+  const auth = getAuth(app);
 
   const {
-    addDoc,
     collection,
     deleteDoc,
     doc,
@@ -123,29 +113,24 @@ export const DayworkerProvider = ({
     where,
   } = firebase.store;
   // console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
-  const db = getFirestore(firebase.app, process.env.NODE_ENV);
+  const db = getFirestore(app, process.env.NODE_ENV);
+  const defaultDb = getFirestore(app);
+
+  const { getStorage, ref, uploadBytesResumable, getDownloadURL } =
+    firebase.storage;
+  const storage = getStorage(app);
 
   const firebaseAnalytics = useMemo(() => {
-    const fbAnalytics = new FirebaseAnalyticsService(analytics);
+    const fbAnalytics = new FirebaseAnalyticsService(firebase.analytics);
     // Singleton trick. Remove constructor to prevent object creating.
     fbAnalytics.constructor = null;
     return fbAnalytics;
-  }, [analytics]);
+  }, [firebase.analytics]);
 
   // END FIREBASE SETUP
 
   const [user, setUser] = useState(undefined);
   const [constants, setConstants] = useState(undefined);
-
-  //   const app = !firebase.app.getApps().length
-  //     ? firebase.app.initializeApp(firebaseConfig)
-  //     : firebase.app.getApps()[0];
-
-  //   const db = store.getFirestore(app, env);
-  //   const defaultDB =
-  //     env != '(default)' ? store.getFirestore(app, '(default)') : db;
-
-  // const firebaseAnalytics = useFirebaseAnalytics(analytics);
 
   const API = useMemo(
     () => ({
@@ -690,7 +675,7 @@ export const DayworkerProvider = ({
       },
       deleteResume: async uid => {
         const path = `${uid}/resume`;
-        const resumeRef = storage.ref(path);
+        const resumeRef = ref(storage, path);
         await resumeRef.delete();
         return new Promise((resolve, reject) => {
           API.updateProfile({ resume: null })
@@ -734,10 +719,10 @@ export const DayworkerProvider = ({
           data.currentUID = auth?.currentUser?.uid;
           data.timestamp = FieldValue.serverTimestamp(); // store.serverTimestamp(); // Timestamp.now(); // new Date().getTime();
 
-          const mailRef = collection(db, 'mail');
-          // const emailDoc = doc(mailRef).id;
-          // const docRef = doc(mailRef, emailDoc);
-          await addDoc(mailRef, data)
+          const mailRef = collection(defaultDb, 'mail');
+          const emailDoc = doc(mailRef, data.currentUID);
+
+          await setDoc(emailDoc, data)
             .then(() => {
               console.log('Email sent');
               resolve('Email sent');
@@ -813,7 +798,10 @@ export const DayworkerProvider = ({
       ) => {
         // format = format || 'data_url'; // 'base64' | 'base64url' | 'data_url'
         // const storageRef = storage.ref(path);
-        const task = storage.ref(path).putFile(base64);
+        // const task = storage.ref(path).putFile(base64);
+        const fileRef = ref(storage, path);
+        const task = uploadBytesResumable(fileRef, base64);
+
         task.on('state_changed', taskSnapshot => {
           // console.log(
           //   `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
@@ -836,7 +824,8 @@ export const DayworkerProvider = ({
           });
       },
       getFileURL: async name => {
-        const url = await storage.ref(name).getDownloadURL();
+        const fileRef = ref(storage, name);
+        const url = await getDownloadURL(fileRef);
         return url;
       },
       deleteAccount: async () => {
@@ -873,23 +862,25 @@ export const DayworkerProvider = ({
       Filter,
       GeoPoint,
       PhoneAuthProvider,
-      addDoc,
-      app,
       auth,
       collection,
       constants,
       createUserWithEmailAndPassword,
       db,
+      defaultDb,
       deleteDoc,
       deleteUser,
       doc,
       endAt,
+      firebase?.app,
       firebaseAnalytics,
       getDoc,
       getDocs,
+      getDownloadURL,
       orderBy,
       query,
       reauthenticateWithCredential,
+      ref,
       sendPasswordResetEmail,
       setDoc,
       signInWithEmailAndPassword,
@@ -898,6 +889,7 @@ export const DayworkerProvider = ({
       startAt,
       storage,
       updateDoc,
+      uploadBytesResumable,
       user,
       verifyPhoneNumber,
       where,
