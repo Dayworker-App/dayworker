@@ -92,6 +92,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
     signInWithPhoneNumber,
     signOut,
     unlink,
+    updateEmail,
     updatePhoneNumber,
     verifyPhoneNumber,
   } = firebase.auth;
@@ -272,13 +273,20 @@ export const DayworkerProvider = ({ children, firebase }) => {
       },
       updateUserAuthEmail: async newEmail => {
         return new Promise(async (resolve, reject) => {
-          return await updateEmail(auth.currentUser, newEmail)
+          console.log('Updating user email: ', newEmail);
+          await updateEmail(auth.currentUser, newEmail)
             .then(async () => {
-              await auth.currentUser?.reload();
+              console.log('Update user email COMPLETE ');
+              return auth.currentUser?.reload?.();
+            })
+            .then(() => {
               setUser(() => auth.currentUser);
               resolve(auth.currentUser);
             })
-            .catch(error => reject(error));
+            .catch(error => {
+              console.error('Update user email ERROR: ', error);
+              reject(error);
+            });
         });
       },
       signOut: async () => await signOut(auth),
@@ -890,6 +898,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
       storage,
       unlink,
       updateDoc,
+      updateEmail,
       updatePhoneNumber,
       uploadBytesResumable,
       user,
