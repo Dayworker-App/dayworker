@@ -81,16 +81,19 @@ export const DayworkerProvider = ({ children, firebase }) => {
   const {
     createUserWithEmailAndPassword,
     deleteUser,
+    EmailAuthProvider,
     getAuth,
+    linkWithCredential,
     onAuthStateChanged,
+    PhoneAuthProvider,
+    reauthenticateWithCredential,
     sendPasswordResetEmail,
     signInWithEmailAndPassword,
     signInWithPhoneNumber,
     signOut,
+    unlink,
+    updatePhoneNumber,
     verifyPhoneNumber,
-    reauthenticateWithCredential,
-    PhoneAuthProvider,
-    EmailAuthProvider,
   } = firebase.auth;
   const auth = getAuth(app);
 
@@ -180,8 +183,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
             verificationId,
             code.trim(),
           );
-          await auth.currentUser
-            ?.updatePhoneNumber(credential)
+          await updatePhoneNumber(auth.currentUser, credential)
             .then(async () => {
               await auth.currentUser?.reload();
               setUser(() => auth.currentUser);
@@ -196,8 +198,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
             verificationId,
             code.trim(),
           );
-          await auth.currentUser
-            ?.linkWithCredential(credential)
+          await linkWithCredential(auth.currentUser, credential)
             .then(userData => {
               setUser(userData.user);
               resolve(userData);
@@ -211,8 +212,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
             email.trim() || auth.currentUser.email,
             password,
           );
-          await auth.currentUser
-            ?.linkWithCredential(credential)
+          await linkWithCredential(auth.currentUser, credential)
             .then(userData => {
               setUser(userData.user);
               resolve(userData);
@@ -244,8 +244,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
       },
       unlinkAuthProvider: async providerId => {
         return new Promise(async (resolve, reject) => {
-          await auth.currentUser
-            ?.unlink(providerId)
+          await unlink(auth.currentUser, providerId)
             .then(userData => {
               setUser(userData);
               resolve(userData);
@@ -877,6 +876,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
       getDoc,
       getDocs,
       getDownloadURL,
+      linkWithCredential,
       orderBy,
       query,
       reauthenticateWithCredential,
@@ -888,7 +888,9 @@ export const DayworkerProvider = ({ children, firebase }) => {
       signOut,
       startAt,
       storage,
+      unlink,
       updateDoc,
+      updatePhoneNumber,
       uploadBytesResumable,
       user,
       verifyPhoneNumber,
