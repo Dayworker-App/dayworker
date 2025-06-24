@@ -104,6 +104,7 @@ export const DayworkerProvider = ({
   const auth = getAuth(firebase.app);
 
   const {
+    addDoc,
     collection,
     deleteDoc,
     doc,
@@ -472,7 +473,9 @@ export const DayworkerProvider = ({
 
         const documents = [];
         querySnapshot.forEach(d => {
-          documents.push(d.data());
+          if (d.exists) {
+            documents.push(d.data());
+          }
         });
         const _const = {};
         documents.forEach(({ name, map }) => (_const[name] = map));
@@ -491,7 +494,8 @@ export const DayworkerProvider = ({
           return cache.get('profile');
         }
 
-        const docRef = doc(db, 'profiles', user.uid);
+        const profilesRef = collection(db, 'profiles');
+        const docRef = doc(profilesRef, user.uid);
 
         return await getDoc(docRef).then(documentSnapshot => {
           if (documentSnapshot.exists) {
@@ -702,7 +706,7 @@ export const DayworkerProvider = ({
         emails = emails || [];
         message = message || {};
         vars = vars || {};
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
           const data = {
             to: Array.isArray(emails) ? emails : [emails],
           };
@@ -731,15 +735,15 @@ export const DayworkerProvider = ({
           data.timestamp = FieldValue.serverTimestamp(); // store.serverTimestamp(); // Timestamp.now(); // new Date().getTime();
 
           const mailRef = collection(db, 'mail');
-          const emailDoc = doc(mailRef).id;
-          const docRef = doc(mailRef, emailDoc);
-          setDoc(docRef, data)
+          // const emailDoc = doc(mailRef).id;
+          // const docRef = doc(mailRef, emailDoc);
+          await addDoc(mailRef, data)
             .then(() => {
-              resolve('Email sent');
               console.log('Email sent');
+              resolve('Email sent');
             })
             .catch(err => {
-              reject('Email not sent: ' + JSON.stringify(err));
+              reject('Email not sent: ' + err.message);
             });
         });
       },
@@ -840,8 +844,10 @@ export const DayworkerProvider = ({
           try {
             // We may want to delete more content. I.e. nudges, favorites, etc.
             const UID = auth.currentUser?.uid;
-            const profileRef = collection(db, 'profiles', UID);
-            return deleteDoc(profileRef)
+            const profileRef = collection(db, 'profiles');
+            const docRef = doc(profileRef, UID);
+
+            return deleteDoc(docRef)
               .then(() => {
                 return deleteUser(auth.currentUser);
                 // return auth.currentUser?.delete?.();
@@ -867,6 +873,7 @@ export const DayworkerProvider = ({
       Filter,
       GeoPoint,
       PhoneAuthProvider,
+      addDoc,
       app,
       auth,
       collection,
