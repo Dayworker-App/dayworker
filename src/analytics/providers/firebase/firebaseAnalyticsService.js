@@ -29,7 +29,7 @@ class FirebaseAnalyticsService {
    */
   async trackSignUpSubmitted(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SIGN_UP_SUBMITTED,
       eventParams,
     );
@@ -43,7 +43,7 @@ class FirebaseAnalyticsService {
    */
   async trackSignUpSuccess(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SIGN_UP_SUCCESS,
       eventParams,
     );
@@ -57,7 +57,7 @@ class FirebaseAnalyticsService {
    */
   async trackSignUpFailed(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SIGN_UP_FAILED,
       eventParams,
     );
@@ -71,7 +71,7 @@ class FirebaseAnalyticsService {
    */
   async trackLoginSuccess(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.LOG_IN_SUCCESS,
       eventParams,
     );
@@ -85,7 +85,7 @@ class FirebaseAnalyticsService {
    */
   async trackLogoutSuccess(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.LOG_OUT_SUCCESS,
       eventParams,
     );
@@ -99,7 +99,7 @@ class FirebaseAnalyticsService {
    */
   async trackAccountDeleted(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.ACCOUNT_DELETED,
       eventParams,
     );
@@ -113,7 +113,7 @@ class FirebaseAnalyticsService {
    */
   async trackAppLaunched(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.APP_LAUNCHED,
       eventParams,
     );
@@ -127,7 +127,7 @@ class FirebaseAnalyticsService {
    */
   async trackAppForegrounded(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.APP_FOREGROUNDED,
       eventParams,
     );
@@ -141,7 +141,7 @@ class FirebaseAnalyticsService {
    */
   async trackAppBackgrounded(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.APP_BACKGROUNDED,
       eventParams,
     );
@@ -155,7 +155,7 @@ class FirebaseAnalyticsService {
    */
   async trackChatMessageCreated(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.CHAT_MESSAGE_CREATED,
       eventParams,
     );
@@ -169,7 +169,7 @@ class FirebaseAnalyticsService {
    */
   async trackChatMessageSent(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.CHAT_MESSAGE_SENT,
       eventParams,
     );
@@ -183,7 +183,7 @@ class FirebaseAnalyticsService {
    */
   async trackSubscribeClicked(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SUBSCRIBE_CLICKED,
       eventParams,
     );
@@ -197,7 +197,7 @@ class FirebaseAnalyticsService {
    */
   async trackSubscribeSuccess(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SUBSCRIBE_SUCCESS,
       eventParams,
     );
@@ -211,7 +211,7 @@ class FirebaseAnalyticsService {
    */
   async trackSubscribeFailed(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SUBSCRIBE_FAILED,
       eventParams,
     );
@@ -225,7 +225,7 @@ class FirebaseAnalyticsService {
    */
   async trackSubscriptionExpired(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SUBSCRIPTION_EXPIRED,
       eventParams,
     );
@@ -239,7 +239,7 @@ class FirebaseAnalyticsService {
    */
   async trackSearchExpanded(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SEARCH_EXPANDED,
       eventParams,
     );
@@ -253,7 +253,7 @@ class FirebaseAnalyticsService {
    */
   async trackSearchCollapsed(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SEARCH_COLLAPSED,
       eventParams,
     );
@@ -267,7 +267,7 @@ class FirebaseAnalyticsService {
    */
   async trackSearchSubmitted(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SEARCH_SUBMITTED,
       eventParams,
     );
@@ -281,7 +281,7 @@ class FirebaseAnalyticsService {
    */
   async trackSearchResultClicked(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SEARCH_RESULT_CLICKED,
       eventParams,
     );
@@ -295,7 +295,7 @@ class FirebaseAnalyticsService {
    */
   async trackSearchResultViewed(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.SEARCH_RESULT_VIEWED,
       eventParams,
     );
@@ -309,7 +309,7 @@ class FirebaseAnalyticsService {
    */
   async trackProfileViewed(eventParams) {
     await this.firebaseAnalytics.logEvent(
-      analytics,
+      this.analytics,
       FirebaseEvents.PROFILE_VIEWED,
       eventParams,
     );
@@ -323,7 +323,7 @@ class FirebaseAnalyticsService {
    */
   async setAnalyticsUserId(userId) {
     console.log('setAnalyticsUserId: ', userId);
-    await setUserId(analytics, userId);
+    await setUserId(this.analytics, userId);
   }
 
   /**
@@ -337,7 +337,7 @@ class FirebaseAnalyticsService {
       'setAnalyticsUserProperties: ',
       JSON.stringify(userProperties || {}, null, 2),
     );
-    await setUserProperties(analytics, userProperties);
+    await setUserProperties(this.analytics, userProperties);
   }
 }
 
