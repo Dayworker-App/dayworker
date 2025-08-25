@@ -58,6 +58,7 @@ export const DayworkerContext = React.createContext({
   emailUser: async (emails, message, vars) => null,
   googleMapsGeolocate: async address => null,
   uploadFileBase64: async (base64, path, format) => null,
+  uploadFileUri: async (fileUri, path, callbacks) => null,
   getFileURL: async name => null,
   uploadResume: async (uid, base64, callbacks) => url,
   deleteResume: async uid => null,
@@ -76,6 +77,8 @@ export const useDayworker = () => useContext(DayworkerContext);
 export const DayworkerProvider = ({ children, firebase }) => {
   // START FIREBASE SETUP
   const auth = firebase.auth.getAuth(firebase.app);
+  // console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
+  // const db = firebase.store.getFirestore(firebase.app, 'production');
   const db = firebase.store.getFirestore(firebase.app, process.env.NODE_ENV);
   const defaultDb = firebase.store.getFirestore(firebase.app);
   const storage = firebase.storage.getStorage(firebase.app);
@@ -648,12 +651,12 @@ export const DayworkerProvider = ({ children, firebase }) => {
             });
         });
       },
-      uploadResume: async (uid, base64, callbacks) => {
+      uploadResume: async (uid, fileUri, callbacks) => {
         // Check if uid exists
         const path = `${uid}/resume`;
 
         return new Promise((resolve, reject) => {
-          API.uploadFileBase64(base64, path, null, callbacks)
+          API.uploadFileUri(fileUri, path, callbacks)
             .then(async res => {
               const url = await API.getFileURL(path);
               API.updateProfile({ resume: url })
@@ -797,21 +800,62 @@ export const DayworkerProvider = ({ children, firebase }) => {
         // const storageRef = storage.ref(path);
         // const task = storage.ref(path).putFile(base64);
         const fileRef = firebase.storage.ref(storage, path);
-        const task = firebase.storage.uploadBytesResumable(fileRef, base64);
 
-        task.on('state_changed', taskSnapshot => {
-          // console.log(
-          //   `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
-          // );
-          callbacks?.onUploadProgress?.({
-            progress:
-              (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) * 100,
-          });
-        });
+        // Convert base64 string to Uint8Array for uploadBytesResumable
+        const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
+        const binaryString = atob(base64Data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+
+        const task = firebase.storage.uploadBytesResumable(fileRef, bytes);
+
+        task.on(
+          'state_changed',
+          taskSnapshot => {
+            console.log(
+              `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+            );
+            callbacks?.onUploadProgress?.({
+              progress:
+                (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) * 100,
+            });
+          },
+          error => {
+            // A full list of error codes is available at
+            // https://firebase.google.com/docs/storage/web/handle-errors
+            switch (error.code) {
+              case 'storage/unauthorized':
+                // User doesn't have permission to access the object
+                console.error('User unauthorized to upload file');
+                break;
+              case 'storage/canceled':
+                // User canceled the upload
+                console.error('User canceled file upload');
+                break;
+
+              // ...
+
+              case 'storage/unknown':
+                // Unknown error occurred, inspect error.serverResponse
+                console.error('Unknown error occurred during file upload');
+                break;
+            }
+          },
+          () => {
+            // Upload completed successfully, now we can get the download URL
+            firebase.storage
+              .getDownloadURL(task.snapshot.ref)
+              .then(downloadURL => {
+                console.log('File available at', downloadURL);
+              });
+          },
+        );
 
         return task
           .then(() => {
-            // console.log('Image uploaded to the bucket!');
+            console.log('Image uploaded to the bucket!');
             callbacks?.onSuccess?.(task);
             return task;
           })
@@ -819,6 +863,46 @@ export const DayworkerProvider = ({ children, firebase }) => {
             console.error('upload file error: ', e.message);
             callbacks?.onError?.(e);
           });
+      },
+      uploadFileUri: async (fileUri, path, callbacks) => {
+        const fileRef = firebase.storage.ref(storage, path);
+
+        try {
+          // Fetch the file and convert to blob (preserves binary data)
+          const response = await fetch(fileUri);
+          const blob = await response.blob();
+
+          const task = firebase.storage.uploadBytesResumable(fileRef, blob);
+
+          task.on(
+            'state_changed',
+            taskSnapshot => {
+              console.log(
+                `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+              );
+              callbacks?.onUploadProgress?.({
+                progress:
+                  (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) *
+                  100,
+              });
+            },
+            error => {
+              console.error('Upload error: ', error);
+              callbacks?.onError?.(error);
+            },
+            () => {
+              // Upload completed successfully
+              console.log('File uploaded to the bucket!');
+              callbacks?.onSuccess?.(task);
+            },
+          );
+
+          return task;
+        } catch (error) {
+          console.error('Error preparing file for upload:', error);
+          callbacks?.onError?.(error);
+          throw error;
+        }
       },
       getFileURL: async name => {
         const fileRef = firebase.storage.ref(storage, name);
