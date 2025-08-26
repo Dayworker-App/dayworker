@@ -77,7 +77,6 @@ export const useDayworker = () => useContext(DayworkerContext);
 export const DayworkerProvider = ({ children, firebase }) => {
   // START FIREBASE SETUP
   const auth = firebase.auth.getAuth(firebase.app);
-  // console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
   // const db = firebase.store.getFirestore(firebase.app, 'production');
   const db = firebase.store.getFirestore(firebase.app, process.env.NODE_ENV);
   const defaultDb = firebase.store.getFirestore(firebase.app);
@@ -366,22 +365,17 @@ export const DayworkerProvider = ({ children, firebase }) => {
       updateProfile: async data => {
         return new Promise(async (resolve, reject) => {
           const UID = auth.currentUser?.uid;
-          console.log('updateProfile UID: ', UID);
           const profileRef = firebase.store.doc(db, 'profiles', UID);
           const profile = await firebase.store.getDoc(profileRef);
-          console.log('updateProfile profile: ', profile);
 
           if (!profile.exists) {
             return reject(`Profile ${UID} doesn't exist.`);
           }
 
           if (data.email) {
-            console.log('updateProfile data.email: ', data.email);
             try {
-              console.log('Updating user email: ', data.email);
               // Update the auth email
               await API.updateUserAuthEmail(data.email);
-              console.log('Update user email COMPLETE ');
             } catch (e) {
               reject(e);
             }
@@ -403,7 +397,6 @@ export const DayworkerProvider = ({ children, firebase }) => {
           await firebase.store
             .updateDoc(profileRef, data)
             .then(() => {
-              console.log('Profile updated successfully');
               const currentProfile = cache.get('profile');
               const updatedProfile = {
                 ...currentProfile,
@@ -574,7 +567,7 @@ export const DayworkerProvider = ({ children, firebase }) => {
 
         const bounds = geofire.geohashQueryBounds(centerArray, radiusInM);
         const promises = [];
-        // console.log('bounds: ', bounds);
+
         for (const b of bounds) {
           const profilesRef = firebase.store.collection(db, 'profiles'); //
           const q = firebase.store.query(
@@ -724,7 +717,6 @@ export const DayworkerProvider = ({ children, firebase }) => {
           await firebase.store
             .setDoc(emailDoc, data)
             .then(() => {
-              console.log('Email sent');
               resolve('Email sent');
             })
             .catch(err => {
@@ -768,7 +760,6 @@ export const DayworkerProvider = ({ children, firebase }) => {
           `https://maps.googleapis.com/maps/api/geocode/json?${q}`,
         );
         const data = await res.json();
-        // console.log('data: ', data);
 
         const response = { geoPoint: null, geohash: null };
         if (data.results.length) {
@@ -814,9 +805,9 @@ export const DayworkerProvider = ({ children, firebase }) => {
         task.on(
           'state_changed',
           taskSnapshot => {
-            console.log(
-              `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
-            );
+            // console.log(
+            //   `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+            // );
             callbacks?.onUploadProgress?.({
               progress:
                 (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) * 100,
@@ -845,22 +836,19 @@ export const DayworkerProvider = ({ children, firebase }) => {
           },
           () => {
             // Upload completed successfully, now we can get the download URL
-            firebase.storage
-              .getDownloadURL(task.snapshot.ref)
-              .then(downloadURL => {
-                console.log('File available at', downloadURL);
-              });
+            firebase.storage.getDownloadURL(task.snapshot.ref);
+            // .then(downloadURL => {
+            //   console.log('File available at', downloadURL);
+            // });
           },
         );
 
         return task
           .then(() => {
-            console.log('Image uploaded to the bucket!');
             callbacks?.onSuccess?.(task);
             return task;
           })
           .catch(e => {
-            console.error('upload file error: ', e.message);
             callbacks?.onError?.(e);
           });
       },
@@ -877,9 +865,9 @@ export const DayworkerProvider = ({ children, firebase }) => {
           task.on(
             'state_changed',
             taskSnapshot => {
-              console.log(
-                `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
-              );
+              // console.log(
+              //   `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+              // );
               callbacks?.onUploadProgress?.({
                 progress:
                   (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) *
@@ -892,7 +880,6 @@ export const DayworkerProvider = ({ children, firebase }) => {
             },
             () => {
               // Upload completed successfully
-              console.log('File uploaded to the bucket!');
               callbacks?.onSuccess?.(task);
             },
           );
