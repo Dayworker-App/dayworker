@@ -23,6 +23,19 @@ const FirebaseEvents = {
   SUBSCRIBE_ABANDONED: 'subscribe_abandoned',
   SUBSCRIPTION_EXPIRED: 'subscription_expired',
   SUBSCRIPTION_CANCELLED: 'subscription_cancelled',
+  // SOCIAL EVENTS
+  // Follow/Favorite
+  FAVORITE_CLICKED: 'favorite_clicked',
+  FAVORITE_SUCCESS: 'favorite_success',
+  FAVORITE_REMOVED: 'favorite_removed',
+  FAVORITE_FAILED: 'favorite_failed',
+  // Report/Flag
+  FLAG_USER_SUBMITTED: 'flag_user_submitted',
+  FLAG_USER_FAILED: 'flag_user_failed',
+  // Nudges
+  NUDGE_CLICKED: 'nudge_clicked',
+  NUDGE_SUCCESS: 'nudge_success',
+  NUDGE_FAILED: 'nudge_failed',
 };
 
 export default FirebaseEvents;

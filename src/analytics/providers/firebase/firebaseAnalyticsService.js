@@ -316,6 +316,62 @@ class FirebaseAnalyticsService {
   }
 
   /**
+   * @method trackFavoriteClicked
+   * @description This method logs a favorite clicked event.
+   * @param eventParams - attributes to send to firebase analytics.
+   * @returns  Promise<void>
+   */
+  async trackFavoriteClicked(eventParams) {
+    await this.firebaseAnalytics.logEvent(
+      this.analytics,
+      FirebaseEvents.FAVORITE_CLICKED,
+      eventParams,
+    );
+  }
+
+  /**
+   * @method trackFavoriteSuccess
+   * @description This method logs a successful favorite event.
+   * @param eventParams - attributes to send to firebase analytics.
+   * @returns  Promise<void>
+   */
+  async trackFavoriteSuccess(eventParams) {
+    await this.firebaseAnalytics.logEvent(
+      this.analytics,
+      FirebaseEvents.FAVORITE_SUCCESS,
+      eventParams,
+    );
+  }
+
+  /**
+   * @method trackFavoriteSuccess
+   * @description This method logs a successful un-favorite event.
+   * @param eventParams - attributes to send to firebase analytics.
+   * @returns  Promise<void>
+   */
+  async trackFavoriteRemoved(eventParams) {
+    await this.firebaseAnalytics.logEvent(
+      this.analytics,
+      FirebaseEvents.FAVORITE_REMOVED,
+      eventParams,
+    );
+  }
+
+  /**
+   * @method trackFavoriteFailed
+   * @description This method logs a successful un-favorite event.
+   * @param eventParams - attributes to send to firebase analytics.
+   * @returns  Promise<void>
+   */
+  async trackFavoriteFailed(eventParams) {
+    await this.firebaseAnalytics.logEvent(
+      this.analytics,
+      FirebaseEvents.FAVORITE_FAILED,
+      eventParams,
+    );
+  }
+
+  /**
    * @method setAnalyticsUserId
    * @description This method sets the user ID for analytics tracking.
    * @param eventParams - attributes to send to firebase analytics.

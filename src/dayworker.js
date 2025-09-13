@@ -70,6 +70,17 @@ export const DayworkerContext = React.createContext({
   updateUserAuthEmail: async email => null,
   reauthenticateUserWithEmailAndPassword: (email, password) => null,
   reauthenticateUserWithPhoneNumber: async (verificationId, code) => null,
+  followUser: async uid => null,
+  unfollowUser: async uid => null,
+  isFollowingUser: async uid => null,
+  getUserFollowing: async followsMe => null,
+  nudgeUser: async (uid, lang) => null,
+  unnudgeUser: async uid => null,
+  canNudgeUser: async uid => null,
+  getNudges: async isWorker => null,
+  flagUser: async (uid, flag) => null,
+  unflagUser: async (uid, flag) => null,
+  hasFlaggedUser: async (uid, flag) => null,
 });
 
 export const useDayworker = () => useContext(DayworkerContext);
@@ -923,6 +934,326 @@ export const DayworkerProvider = ({ children, firebase }) => {
       },
       sendForgotPasswordEmail: async email => {
         return await firebase.auth.sendPasswordResetEmail(auth, email);
+      },
+      /**
+       * ███████╗ ██████╗ ██╗     ██╗      ██████╗ ██╗    ██╗
+       * ██╔════╝██╔═══██╗██║     ██║     ██╔═══██╗██║    ██║
+       * █████╗  ██║   ██║██║     ██║     ██║   ██║██║ █╗ ██║
+       * ██╔══╝  ██║   ██║██║     ██║     ██║   ██║██║███╗██║
+       * ██║     ╚██████╔╝███████╗███████╗╚██████╔╝╚███╔███╔╝
+       * ╚═╝      ╚═════╝ ╚══════╝╚══════╝ ╚═════╝  ╚══╝╚══╝
+       */
+      followUser: async uid => {
+        if (!user) return Promise.reject('Not authenticated');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const followingRef = firebase.store.collection(userDoc, 'follows');
+        const followingDoc = firebase.store.doc(followingRef);
+        return firebase.store.setDoc(
+          followingDoc,
+          { a: user.uid, b: uid },
+          { merge: true },
+        );
+      },
+      unfollowUser: async uid => {
+        if (!user) return Promise.reject('Not authenticated');
+        const isFollowing = await API.isFollowingUser(uid);
+        if (!isFollowing) return Promise.reject('Not following user');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const followingRef = firebase.store.collection(userDoc, 'follows');
+        const q = firebase.store.query(
+          followingRef,
+          firebase.store.where('a', '==', user.uid),
+          firebase.store.where('b', '==', uid),
+        );
+        const querySnapshot = await firebase.store.getDocs(q);
+        if (querySnapshot.empty) return Promise.reject('Not following user');
+        const doc = querySnapshot.docs[0];
+        return firebase.store.deleteDoc(doc.ref);
+      },
+      // Returns null if the following relationship does not exist. Returns the document if it does.
+      isFollowingUser: async uid => {
+        if (!user) return Promise.reject('Not authenticated');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const followingRef = firebase.store.collection(userDoc, 'follows');
+        const q = firebase.store.query(
+          followingRef,
+          firebase.store.where('a', '==', user.uid),
+          firebase.store.where('b', '==', uid),
+        );
+        const querySnapshot = await firebase.store.getDocs(q);
+        if (querySnapshot.empty) return null;
+        const doc = querySnapshot.docs[0];
+        return doc.data();
+      },
+      getUserFollowing: async followsMe => {
+        const imFollowing = followsMe === undefined ? true : !followsMe;
+        if (!user) return Promise.reject('Not authenticated');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const followingRef = firebase.store.collection(userDoc, 'follows');
+        const q = imFollowing
+          ? // Users that I am following
+            firebase.store.query(
+              followingRef,
+              firebase.store.where('a', '==', user.uid),
+            )
+          : // Users that are following me
+            firebase.store.query(
+              followingRef,
+              firebase.store.where('b', '==', user.uid),
+            );
+        const querySnapshot = await firebase.store.getDocs(q);
+        const following = [];
+        querySnapshot.forEach(d => {
+          const data = d.data();
+          imFollowing ? following.push(data.b) : following.push(data.a);
+        });
+        // Load and convert array of UIDs to array of user profiles
+        if (!following.length) return following;
+        const profilesRef = firebase.store.collection(db, 'profiles');
+        const profilePromises = following.map(uid => {
+          return firebase.store
+            .getDoc(firebase.store.doc(profilesRef, uid))
+            .then(doc => {
+              if (doc.exists()) {
+                return doc.data();
+              } else {
+                console.warn(`Profile for UID ${uid} does not exist.`);
+                return null;
+              }
+            });
+        });
+        const profileDocs = await Promise.all(profilePromises);
+        // Filter out null profiles
+        const validProfiles = profileDocs.filter(profile => profile !== null);
+        /* // Sort profiles by name
+            validProfiles.sort((a, b) => {
+                if (a.name && b.name) {
+                    return a.name.localeCompare(b.name);
+                } else if (a.name) {
+                    return -1;
+                } else if (b.name) {
+                    return 1;
+                }
+                return 0;
+            }); */
+        /* // Return the sorted array of profiles
+            if (validProfiles.length) {
+                cache.set('following', validProfiles);
+            } else {
+                cache.delete('following');
+            } */
+        return validProfiles;
+      },
+
+      /**
+       * ███╗   ██╗██╗   ██╗██████╗  ██████╗ ███████╗
+       * ████╗  ██║██║   ██║██╔══██╗██╔════╝ ██╔════╝
+       * ██╔██╗ ██║██║   ██║██║  ██║██║  ███╗█████╗
+       * ██║╚██╗██║██║   ██║██║  ██║██║   ██║██╔══╝
+       * ██║ ╚████║╚██████╔╝██████╔╝╚██████╔╝███████╗
+       * ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝  ╚═════╝ ╚══════╝
+       */
+      // Nudge a user, create a nudge document if it doesn't exist
+      nudgeUser: async (uid, lang = 'en-US') => {
+        if (!user) return Promise.reject('Not authenticated');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const nudgesRef = firebase.store.collection(userDoc, 'nudges');
+        const nudgeDoc = firebase.store.doc(nudgesRef);
+        // Check if user has already nudged this user or hasnt been long enough since last nudge
+        const canNudge = await API.canNudgeUser(uid);
+        if (!canNudge)
+          return Promise.reject(
+            "User has already nudged this user or hasn't been long enough since last nudge",
+          );
+        // Remove any existing nudge document for this user
+        await API.unnudgeUser(uid);
+        // User has not nudged this user, create a new nudge document
+        const t = firebase.store.serverTimestamp(); // Timestamp.now(); // new Date().getTime();
+        const result = firebase.store.setDoc(
+          nudgeDoc,
+          { a: user.uid, b: uid, t },
+          { merge: true },
+        );
+        // if (!result) return Promise.reject("Nudge not created");
+        // Get the nudger's (user) data
+        const nudgerRef = firebase.store.doc(
+          firebase.store.collection(db, 'profiles'),
+          user.uid,
+        );
+        const nudgerDoc = await firebase.store.getDoc(nudgerRef);
+        const nudger = nudgerDoc.exists() ? nudgerDoc.data() : null;
+        // Get the nudged's (uid) data
+        const nudgedRef = firebase.store.doc(
+          firebase.store.collection(db, 'profiles'),
+          uid,
+        );
+        const nudgedDoc = await firebase.store.getDoc(nudgedRef);
+        const nudged = nudgedDoc.exists() ? nudgedDoc.data() : null;
+        const templateName = `nudged`;
+        const templateLang = lang.toUpperCase();
+        await API.emailUser(uid, `email--${templateName}--${templateLang}`, {
+          name: nudged.name,
+          nudger: nudger.name,
+          year: new Date().getFullYear(),
+        });
+        // Return the nudge document
+        // const resultDoc = await result.ref.get();
+        return result;
+      },
+      // Unnudge a user, delete the nudge document if it exists
+      unnudgeUser: async uid => {
+        if (!user) return Promise.resolve('Not authenticated');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const nudgesRef = firebase.store.collection(userDoc, 'nudges');
+        const q = firebase.store.query(
+          nudgesRef,
+          firebase.store.where('a', '==', user.uid),
+          firebase.store.where('b', '==', uid),
+        );
+        const querySnapshot = await firebase.store.getDocs(q);
+        if (querySnapshot.empty) return Promise.resolve(false);
+        // User has nudged this user, delete the nudge document
+        const doc = querySnapshot.docs[0];
+        return firebase.store.deleteDoc(doc.ref);
+      },
+      // Check if user has already nudged this user or hasnt been long enough since last nudge, resolve false if so
+      canNudgeUser: async uid => {
+        if (!user) return Promise.reject('Not authenticated');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const nudgesRef = firebase.store.collection(userDoc, 'nudges');
+        const q = firebase.store.query(
+          nudgesRef,
+          firebase.store.where('a', '==', user.uid),
+          firebase.store.where('b', '==', uid),
+        );
+        const querySnapshot = await firebase.store.getDocs(q);
+        if (querySnapshot.empty) return Promise.resolve(true); // User has not nudged this user
+        // User has nudged this user, check if enough time has passed
+        const doc = querySnapshot.docs[0];
+        const nudgeData = doc.data();
+        const now = await firebase.store.Timestamp.now().seconds; // Timestamp.now(); // new Date().getTime();
+        const nudgeTime = nudgeData.t.seconds; // Timestamp or Date object
+        const timeDiff = now - nudgeTime; // Difference in seconds
+        if (timeDiff < nudgeCooldown) {
+          return Promise.resolve(false); // User has nudged this user, but not enough time has passed
+        }
+        return Promise.resolve(true); // User has nudged this user, but enough time has passed
+      },
+      getNudges: async (isWorker = true) => {
+        if (!user) return Promise.reject('Not authenticated');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const nudgesRef = firebase.store.collection(userDoc, 'nudges');
+        const q = firebase.store.query(
+          nudgesRef,
+          firebase.store.where(isWorker ? 'a' : 'b', '==', user.uid),
+        );
+        const querySnapshot = await firebase.store.getDocs(q);
+        const nudges = [];
+        querySnapshot.forEach(d => {
+          const data = d.data();
+          nudges.push({
+            uid: isWorker ? data.b : data.a,
+            timestamp: data.t,
+            nudgeTime: data.t.toDate ? data.t.toDate() : data.t, // Convert Timestamp to Date object
+            canNudge:
+              nudgeCooldown &&
+              firebase.store.Timestamp.now().seconds - data.t.seconds >
+                nudgeCooldown,
+          });
+        });
+        // Return nudges as profiles
+        if (!nudges.length) return nudges;
+        const profilesRef = firebase.store.collection(db, 'profiles');
+        const profilePromises = nudges.map(nudge => {
+          return firebase.store
+            .getDoc(firebase.store.doc(profilesRef, nudge.uid))
+            .then(doc => {
+              if (doc.exists()) {
+                return { profile: doc.data(), nudge };
+              } else {
+                console.warn(`Profile for UID ${nudge.uid} does not exist.`);
+                return null;
+              }
+            });
+        });
+        const profileDocs = await Promise.all(profilePromises);
+        // Filter out null profiles
+        const validProfiles = profileDocs.filter(profile => profile !== null);
+        return validProfiles;
+      },
+
+      /**
+       * ███████╗██╗      █████╗  ██████╗
+       * ██╔════╝██║     ██╔══██╗██╔════╝
+       * █████╗  ██║     ███████║██║  ███╗
+       * ██╔══╝  ██║     ██╔══██║██║   ██║
+       * ██║     ███████╗██║  ██║╚██████╔╝
+       * ╚═╝     ╚══════╝╚═╝  ╚═╝ ╚═════╝
+       */
+      // Flag a user for innappropriate content or behavior
+      flagUser: async (uid, FLAG) => {
+        if (!user) return Promise.reject('Not authenticated');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const flagsRef = firebase.store.collection(userDoc, 'flags');
+        const flagDoc = firebase.store.doc(flagsRef);
+        // Check if user has already flagged this user or hasnt been long enough since last flag
+        const hasFlagged = await API.hasFlaggedUser(uid, FLAG);
+        if (hasFlagged)
+          return Promise.reject(
+            'User has already flagged this user with this flag',
+          );
+        // User has not flagged this user, create a new flag document
+        const t = firebase.store.serverTimestamp(); // Timestamp.now(); // new Date().getTime();
+        return firebase.store.setDoc(
+          flagDoc,
+          { a: user.uid, b: uid, f: FLAG, t },
+          { merge: true },
+        );
+      },
+      unflagUser: async (uid, FLAG) => {
+        if (!user) return Promise.reject('Not authenticated');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const flagsRef = firebase.store.collection(userDoc, 'flags');
+        const q = firebase.store.query(
+          flagsRef,
+          firebase.store.where('a', '==', user.uid),
+          firebase.store.where('b', '==', uid),
+          firebase.store.where('f', '==', FLAG),
+        );
+        const querySnapshot = await firebase.store.getDocs(q);
+        if (querySnapshot.empty)
+          return Promise.reject(
+            'User has not flagged this user with this flag',
+          );
+        // User has flagged this user with this flag, delete the flag document
+        const doc = querySnapshot.docs[0];
+        return firebase.store.deleteDoc(doc.ref);
+      },
+      hasFlaggedUser: async (uid, FLAG) => {
+        if (!user) return Promise.reject('Not authenticated');
+        const connectionsRef = firebase.store.collection(db, 'connections');
+        const userDoc = firebase.store.doc(connectionsRef, 'users');
+        const flagsRef = firebase.store.collection(userDoc, 'flags');
+        const q = firebase.store.query(
+          flagsRef,
+          firebase.store.where('a', '==', user.uid),
+          firebase.store.where('b', '==', uid),
+          firebase.store.where('f', '==', FLAG),
+        );
+        const querySnapshot = await firebase.store.getDocs(q);
+        if (querySnapshot.empty) return Promise.resolve(false); // User has not flagged this user
+        // User hasn't flagged this user with this flag. (time doesn't matter for flags)
+        return Promise.resolve(true); // User has not flagged this user with this flag
       },
     }),
     [
